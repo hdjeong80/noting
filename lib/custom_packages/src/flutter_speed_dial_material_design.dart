@@ -257,13 +257,16 @@ class _SpeedDialState extends State<SpeedDial> with TickerProviderStateMixin {
         animation: _controller,
         builder: (context, child) {
           if (_controller.isDismissed == false)
-            return GestureDetector(
-                onTap: toggle,
-                child: Container(
-                    color: screenColorSequence
-                        .evaluate(AlwaysStoppedAnimation(_controller.value)),
-                    child: _buildActionsWithoutOverlay(
-                        bottom, start, labelPosition)));
+            return IgnorePointer(
+              ignoring: context.watch<AppData>().isHistoryScreen,
+              child: GestureDetector(
+                  onTap: toggle,
+                  child: Container(
+                      color: screenColorSequence
+                          .evaluate(AlwaysStoppedAnimation(_controller.value)),
+                      child: _buildActionsWithoutOverlay(
+                          bottom, start, labelPosition))),
+            );
           else
             return _buildActionsWithoutOverlay(bottom, start, labelPosition);
         });
@@ -365,25 +368,28 @@ class _SpeedDialState extends State<SpeedDial> with TickerProviderStateMixin {
   }
 
   Widget _buildFab() {
-    return FloatingActionButton(
-      onPressed: toggle,
-      backgroundColor: widget.backgroundColor,
-      foregroundColor: widget.foregroundColor,
-      child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            if (widget.childOnUnfold == null) {
-              return widget.useRotateAnimation
-                  ? _buildRotation(widget.childOnFold)
-                  : widget.childOnFold;
-            } else {
-              return widget.useRotateAnimation
-                  ? _buildRotation(_buildAnimatedSwitcher())
-                  : _buildAnimatedSwitcher();
-            }
-          }),
-      // elevation: 2.0,
-      elevation: 0,
+    return IgnorePointer(
+      ignoring: context.read<AppData>().isHistoryScreen,
+      child: FloatingActionButton(
+        onPressed: toggle,
+        backgroundColor: widget.backgroundColor,
+        foregroundColor: widget.foregroundColor,
+        child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              if (widget.childOnUnfold == null) {
+                return widget.useRotateAnimation
+                    ? _buildRotation(widget.childOnFold)
+                    : widget.childOnFold;
+              } else {
+                return widget.useRotateAnimation
+                    ? _buildRotation(_buildAnimatedSwitcher())
+                    : _buildAnimatedSwitcher();
+              }
+            }),
+        // elevation: 2.0,
+        elevation: 0,
+      ),
     );
   }
 

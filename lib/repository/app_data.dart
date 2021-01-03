@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
+import 'package:noting/repository/db.dart';
 import 'package:painter/painter.dart';
 import 'package:zefyr/zefyr.dart';
 
@@ -30,11 +31,11 @@ class ConfigConst {
   static final eraseSizeBig = 24.0;
   static final eraseSizeMax = 30.0;
 
-  static final textSizeMin = 20.0;
-  static final textSizeSmall = 23.0;
-  static final textSizeNormal = 26.0;
-  static final textSizeBig = 29.0;
-  static final textSizeMax = 32.0;
+  static final textSizeMin = 15.0;
+  static final textSizeSmall = 20.0;
+  static final textSizeNormal = 25.0;
+  static final textSizeBig = 30.0;
+  static final textSizeMax = 35.0;
 
   static final floatingActionButtonSize = 56.0;
 }
@@ -54,6 +55,12 @@ List<Offset> gErasePoints = [];
 TextEditingController gTextEditingController;
 FocusNode gTextFocusNode = FocusNode();
 final gFABKey = GlobalKey();
+// String gTextNow = '';
+NotingDatabase gNotingDatabase = NotingDatabase();
+List<NoteModel> gNotesSnapshot;
+NoteModel gCurrentNote;
+// int gCurrentNoteId;
+bool gisDatabaseLoaded = false;
 
 /* Provider variables */
 class AppData with ChangeNotifier {
@@ -64,17 +71,25 @@ class AppData with ChangeNotifier {
   bool _isPopupScreen = false;
   bool _isBackgroundPickerScreen = false;
   bool _isCapturing = false;
-  Color _pickDrawColor = Colors.red;
+  Color _pickDrawColor = Colors.black;
   Color _pickWallpaperColor = Colors.white;
   Color _pickTextColor = Colors.black;
   File _wallpaperImageFile;
-  double _drawSize = ConfigConst.drawSizeSmall;
+  double _drawSize = ConfigConst.drawSizeMin;
   double _eraseSize = ConfigConst.eraseSizeNormal;
   double _textSize = ConfigConst.textSizeMin;
   String _password;
   bool _isPasswordCorrectUi = false;
   int _uiPasswordStep = 0; // 0: initial condition, 1: confirm pw, 2: locked
   Uint8List testImage;
+  bool _isAdmobRemoved = false;
+
+  bool get isAdmobRemoved => _isAdmobRemoved;
+
+  set isAdmobRemoved(bool isAdmobRemoved) {
+    _isAdmobRemoved = isAdmobRemoved;
+    notifyListeners();
+  }
 
   bool get isTextEditingMode {
     return !isDrawMode &&

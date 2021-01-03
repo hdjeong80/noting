@@ -1,8 +1,11 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:noting/repository/app_data.dart';
+import 'package:noting/ui/common_widget.dart';
 import 'package:provider/provider.dart';
 
-import 'common_widget.dart';
+import '../ad_manager.dart';
 
 var _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -18,6 +21,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
+        // hideSnackBar(context);
+        if (gCurrentNote == null) {
+          // showErrorSnackBar(context, '');
+          // return false;
+          gNotingDatabase.addNewNote();
+          _clearText();
+          _clearDrawing();
+        } else if (gNotesSnapshot
+                .where((element) => element.id == gCurrentNote.id)
+                .length ==
+            0) {
+          return false;
+          gNotingDatabase.addNewNote();
+          _clearText();
+          _clearDrawing();
+        } else {}
         context.read<AppData>().isHistoryScreen = false;
         return true;
       },
@@ -161,31 +180,50 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Expanded(
                 child: ListView.builder(
                   padding: EdgeInsets.all(10),
-                  itemCount: 10,
+                  // itemCount: gTextNow.length > 0 ? 1 : 0,
+                  itemCount: gNotesSnapshot.length,
                   itemBuilder: (context, index) {
+                    String text = gNotesSnapshot.elementAt(index).text;
+                    String dateStr = gNotesSnapshot.elementAt(index).createTime;
                     double iconButtonSize = 17;
+                    // String dateStr =
+                    //     DateFormat('yyyy.MM.dd').format(DateTime.now());
+                    String textTitle = '';
+                    if (text.indexOf('\n') > 0) {
+                      textTitle = text.substring(0, text.indexOf('\n'));
+                    } else {
+                      if (textTitle.length > 10) {
+                        textTitle = textTitle.substring(0, 10);
+                      } else {
+                        textTitle = text;
+                      }
+                    }
+                    String textContent = text.replaceAll('\n', ' ');
+
+                    if (textTitle.length > 10) {
+                      textTitle = textTitle.substring(0, 10);
+                    }
+                    if (textContent.length > 100) {
+                      textContent = textContent.substring(0, 100) + '...';
+                    }
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 0),
                       child: Card(
                         elevation: 0.5,
                         child: ListTile(
                           onTap: () {
-                            // print('!!');
-                            // Future.delayed(Duration(milliseconds: 1000), () {
-                            //   print('@@');
-                            //   context
-                            //       .read<AppData>()
-                            //       .isHistoryScreen = false;
-                            // });
+                            gCurrentNote = gNotesSnapshot.elementAt(index);
+                            gTextEditingController.text = gCurrentNote.text;
 
                             Navigator.pop(context);
                             context.read<AppData>().isHistoryScreen = false;
                           },
                           title: Row(
                             children: [
-                              Text('Lorem ipsum($index)'),
+                              Text(textTitle),
                               Spacer(),
-                              Text('Nov 28, 2020'),
+                              Text(dateStr),
                               SizedBox(
                                 width: iconButtonSize + 20,
                                 child: IconButton(
@@ -194,7 +232,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   icon: ImageIcon(
                                       AssetImage('assets/share_icon.png')),
                                   onPressed: () {
-                                    showErrorSnackBar(context);
+                                    // showErrorSnackBar(context);
                                   },
                                 ),
                               ),
@@ -206,7 +244,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   icon: ImageIcon(
                                       AssetImage('assets/delete.png')),
                                   onPressed: () {
-                                    showDeleteDialog(context);
+                                    setState(() {
+                                      if (gNotesSnapshot.elementAt(index).id ==
+                                          gCurrentNote.id) {
+                                        // showErrorSnackBar(context,
+                                        showAlert(context,
+                                            'The note is currently being edited.');
+                                      } else {
+                                        gNotingDatabase.deleteNote(
+                                            gNotesSnapshot.elementAt(index));
+                                      }
+                                    });
                                   },
                                 ),
                               ),
@@ -215,8 +263,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip'),
+                              Text(textContent),
                             ],
                           ),
 
@@ -229,12 +276,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   },
                 ),
               ),
-              SizedBox(
-                height: gDeviceHeight / 10,
-                child: Image(
-                  image: AssetImage('assets/ads.png'),
-                ),
-              ),
+              // SizedBox(
+              //   height: gDeviceHeight / 10,
+              //   child: Image(
+              //     image: AssetImage('assets/ads.png'),
+              //   ),
+              // ),
+              context.watch<AppData>().isAdmobRemoved
+                  ? Container()
+                  : AdmobBanner(
+                      adSize: AdmobBannerSize.ADAPTIVE_BANNER(
+                          width: gDeviceWidth.toInt()),
+                      adUnitId: AdManager.bannerAdUnitId,
+                    ),
               SizedBox(
                 height: gDeviceHeight / 26,
                 child: InkWell(
@@ -242,7 +296,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     color: Colors.blue,
                     child: Center(
                       child: Text(
-                        'Buy Noting\'s Developer a coffee!! (Remove ads)',
+                        context.watch<AppData>().isAdmobRemoved
+                            ? 'Buy Noting\'s Developer a coffee!!'
+                            : 'Buy Noting\'s Developer a coffee!! (Remove ads)',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold),
@@ -250,7 +306,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                   ),
                   onTap: () {
-                    showErrorSnackBar(context);
+                    showPayDialog(context);
                   },
                 ),
               ),
@@ -280,11 +336,49 @@ void showDeleteDialog(BuildContext context) async {
             child: Text('Yes'),
             onPressed: () {
               Navigator.pop(context);
-              showErrorSnackBar(context);
+              // showErrorSnackBar(context);
             },
           ),
         ],
       );
     },
   );
+}
+
+void showPayDialog(BuildContext context) async {
+  print('showPayDialog');
+  String result = await showDialog(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('(Pay Test)'),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('No'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          FlatButton(
+            child: Text('Yes'),
+            onPressed: () {
+              context.read<AppData>().isAdmobRemoved = true;
+              Navigator.pop(context);
+
+              // showErrorSnackBar(context);
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+_clearText() {
+  gTextEditingController.clear();
+}
+
+_clearDrawing() {
+  gPainterController.clear();
 }

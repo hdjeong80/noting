@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'dart:ui' as ui;
 
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -57,12 +58,22 @@ class _FirstScreenState extends State<FirstScreen>
 
   @override
   void initState() {
-    super.initState();
-    SystemChannels.textInput.invokeMethod('TextInput.hide');
+    if (gNotesSnapshot.length == 0) {
+      Future.wait(gNotingDatabase.addNewNote()).then((value) {});
+      gCurrentNote = gNotesSnapshot.last;
+    } else {
+      // gCurrentNote = gNotesSnapshot.last;
+      // for (int i = 0; i < gNotesSnapshot.length; i++) {
+      //   gNotingDatabase.deleteNote(gNotesSnapshot.last);
+      //   print(i);
+      // }
+      // Future.wait(gNotingDatabase.addNewNote())
+      //     .then((value) => print(gNotesSnapshot));
+      gCurrentNote = gNotesSnapshot.last;
+      // gCurrentNoteId = gNotesSnapshot.last.id;
+    }
     gPainterController = _newPainterController();
-    gTextEditingController = TextEditingController();
-
-    _offset = Offset(0, 0);
+    gTextEditingController = TextEditingController(text: gCurrentNote.text);
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 260),
@@ -78,8 +89,12 @@ class _FirstScreenState extends State<FirstScreen>
       if ((event == FGBGType.foreground) &&
           (context.read<AppData>().isTextEditingMode == true)) {
         gTextFocusNode.requestFocus();
+        SystemChannels.textInput.invokeMethod('TextInput.show');
       }
     });
+    // SystemChannels.textInput.invokeMethod('TextInput.show');
+
+    super.initState();
   }
 
   @override
@@ -108,8 +123,13 @@ class _FirstScreenState extends State<FirstScreen>
     }
   }
 
+  Future<void> _iosRequestTrack() async {
+    await Admob.requestTrackingAuthorization();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // _iosRequestTrack();
     gDeviceWidth = MediaQuery.of(context).size.width;
     gDeviceHeight = MediaQuery.of(context).size.height;
 
@@ -161,11 +181,14 @@ class _FirstScreenState extends State<FirstScreen>
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                       horizontal: ConfigConst.scaffoldBodyPadding),
-                  child: Stack(
-                    children: [
-                      _textField(),
-                      _drawCanvas(),
-                    ],
+                  child: SizedBox(
+                    height: gDeviceHeight * ConfigConst.maxNotePages,
+                    child: Stack(
+                      children: [
+                        _textField(),
+                        _drawCanvas(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -186,18 +209,22 @@ class _FirstScreenState extends State<FirstScreen>
     Offset fAB = Offset.zero;
     double fABHeight = 0;
     RenderBox renderBox;
-    double iconIntervalReducer = 10;
+    double iconIntervalReducer = 16;
     if (gFABKey.currentContext != null) {
       renderBox = gFABKey.currentContext.findRenderObject();
       fAB = renderBox.localToGlobal(Offset.zero);
       fABHeight = renderBox.size.height;
     }
 
+    print(
+        'aux visibility: ${(!(context.watch<AppData>().isPopupScreen) && !(context.watch<AppData>().isCapturing))}');
+    print('aux keyboard visible? ${isKeyboardVisible(context)}');
     return Visibility(
       visible: !(context.watch<AppData>().isPopupScreen) &&
           !(context.watch<AppData>().isCapturing),
       child: Stack(
         children: [
+          // Icon(Icons.accessibility_sharp),
           Positioned(
             left: leftPadding,
             bottom: isKeyboardVisible(context)
@@ -217,15 +244,15 @@ class _FirstScreenState extends State<FirstScreen>
                   child: IconButton(
                     color: Colors.blue,
                     icon: isKeyboardVisible(context)
-                        ? Icon(
-                            Icons.keyboard_hide,
-                            color: Colors.blue,
+                        ? ImageIcon(
+                            AssetImage('assets/key_down_4.png'),
                             size: iconSize * 1.5,
+                            color: Colors.blue,
                           )
-                        : Icon(
-                            Icons.keyboard,
-                            color: Colors.blue,
+                        : ImageIcon(
+                            AssetImage('assets/key_up_4.png'),
                             size: iconSize * 1.5,
+                            color: Colors.blue,
                           ),
                     iconSize: iconSize,
                     onPressed: () {
@@ -259,9 +286,7 @@ class _FirstScreenState extends State<FirstScreen>
                     icon: ImageIcon(AssetImage('assets/share.png')),
                     iconSize: iconSize,
                     onPressed: () {
-                      // context.read<AppData>().isCapturing = true;
-                      // _capturePng();
-                      // context.read<AppData>().isCapturing = false;
+                      _capturePng();
                     },
                   ),
                 ),
@@ -403,7 +428,7 @@ class _FirstScreenState extends State<FirstScreen>
   }
 
   Widget _textField() {
-    String dateStr = DateFormat('오늘 yyyy.MM.dd').format(DateTime.now());
+    String dateStr = DateFormat('yyyy.MM.dd').format(DateTime.now());
 
     return CustomScrollView(
       controller: gTextScrollController,
@@ -412,11 +437,12 @@ class _FirstScreenState extends State<FirstScreen>
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(
-              dateStr,
+              'Today ' + dateStr,
               style: TextStyle(
                 fontFamily: 'Naver',
+                fontWeight: FontWeight.w500,
                 color: Colors.grey,
-                fontSize: ConfigConst.textSizeMin,
+                fontSize: ConfigConst.textSizeMin - 2,
               ),
             ),
           ),
@@ -426,7 +452,10 @@ class _FirstScreenState extends State<FirstScreen>
             // scrollPadding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             key: _textEditorKey,
             // scrollPadding: EdgeInsets.all(50),
-            onChanged: (text) {},
+            onChanged: (text) {
+              gCurrentNote.text = text;
+              gNotingDatabase.editNote(oldNote: gCurrentNote, text: text);
+            },
             // scrollPhysics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             autocorrect: false,
             enabled: !(context.watch<AppData>().isDrawMode),
@@ -437,13 +466,13 @@ class _FirstScreenState extends State<FirstScreen>
             keyboardType: TextInputType.multiline,
             maxLines: null,
             cursorColor: Colors.grey,
-            cursorHeight: context.watch<AppData>().textSize,
+            cursorHeight: context.watch<AppData>().textSize * 1.3,
             textAlign: TextAlign.start,
             style: TextStyle(
               fontFamily: 'Naver',
               fontWeight: FontWeight.w500,
               fontSize: context.watch<AppData>().textSize,
-              height: 1.6,
+              height: 1.4,
               color: context.watch<AppData>().pickTextColor,
               letterSpacing: 0.0,
               wordSpacing: 0.0,
@@ -464,7 +493,7 @@ class _FirstScreenState extends State<FirstScreen>
     TextStyle customStyle = TextStyle(
       inherit: false,
       color: Colors.white,
-      fontSize: 17,
+      fontSize: 13,
       fontFamily: 'Naver',
     );
     var icons = [
@@ -557,13 +586,18 @@ class _FirstScreenState extends State<FirstScreen>
     );
   }
 
+  void newNote() {
+    gNotingDatabase.addNewNote();
+    _clearText();
+    _clearDrawing();
+  }
+
   _onSpeedDialAction(int selectedActionIndex) {
     if (selectedActionIndex == 0) {
       context.read<AppData>().isHistoryScreen = true;
       Navigator.pushNamed(context, '/history_screen');
     } else if (selectedActionIndex == 1) {
-      _clearText();
-      _clearDrawing();
+      newNote();
     } else if (selectedActionIndex == 2) {
       _popupSizePicker();
     } else if (selectedActionIndex == 3) {
@@ -832,5 +866,5 @@ class InputDoneView extends StatelessWidget {
 }
 
 bool isKeyboardVisible(BuildContext context) {
-  return (MediaQuery.of(context).viewInsets.bottom != 0);
+  return (MediaQuery.of(context).viewInsets.bottom > 0);
 }

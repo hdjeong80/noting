@@ -12,7 +12,8 @@ class WallpaperPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double iconSize = 30;
+    double iconSize = 25;
+    double sizeReducer = 75;
     if (context.watch<AppData>().isWallpaperPickerScreen)
       gTextFocusNode.unfocus();
 
@@ -33,7 +34,7 @@ class WallpaperPicker extends StatelessWidget {
           ),
         ),
         Positioned(
-          left: ConfigConst.scaffoldBodyPadding,
+          left: ConfigConst.scaffoldBodyPadding + sizeReducer / 2,
           bottom: 70,
           child: Center(
             child: AnimatedOpacity(
@@ -47,7 +48,9 @@ class WallpaperPicker extends StatelessWidget {
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: Colors.blue),
                       color: Colors.transparent),
-                  width: gDeviceWidth - ConfigConst.scaffoldBodyPadding * 2,
+                  width: gDeviceWidth -
+                      ConfigConst.scaffoldBodyPadding * 2 -
+                      sizeReducer,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -74,6 +77,10 @@ class WallpaperPicker extends StatelessWidget {
                           decoration: BoxDecoration(
                               border: Border.all(color: Colors.blue),
                               color: Colors.white),
+                          child: SizedBox(
+                            height: iconSize,
+                            width: iconSize,
+                          ),
                         ),
                         onPressed: () {
                           context.read<AppData>().wallpaperMode =
@@ -89,6 +96,10 @@ class WallpaperPicker extends StatelessWidget {
                           decoration: BoxDecoration(
                               border: Border.all(color: Colors.blue),
                               color: Colors.black),
+                          child: SizedBox(
+                            height: iconSize,
+                            width: iconSize,
+                          ),
                         ),
                         onPressed: () {
                           context.read<AppData>().wallpaperMode =
