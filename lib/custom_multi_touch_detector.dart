@@ -1,55 +1,55 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 
 typedef OnUpdate(DragUpdateDetails details);
 typedef OnUpdateDraw(DragUpdateDetails details);
 typedef OnUpdateDrawEnd(DragEndDetails details);
 
-class CustomMultiTouchDetector extends StatelessWidget {
-  final Widget child;
-  final OnUpdate onUpdate;
-  final OnUpdateDraw onUpdateDraw;
-  final OnUpdateDrawEnd onUpdateDrawEnd;
-
-  CustomMultiTouchDetector(
-      {this.child,
-      this.onUpdate,
-  this.onUpdateDraw,
-      this.onUpdateDrawEnd,}
-      );
-
-  @override
-  Widget build(BuildContext context) {
-    return RawGestureDetector(
-      gestures: <Type, GestureRecognizerFactory>{
-        CustomVerticalMultiDragGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<
-                CustomVerticalMultiDragGestureRecognizer>(
-          () => CustomVerticalMultiDragGestureRecognizer(),
-          (CustomVerticalMultiDragGestureRecognizer instance) {
-            instance.onStart = (Offset position) {
-              return CustomDrag(
-                  events: instance.events,
-                  onUpdate: onUpdate,
-                   onUpdateDraw: onUpdateDraw,
-                onUpdateDrawEnd:onUpdateDrawEnd,
-              );
-            };
-          },
-        ),
-        // CustomPanGestureRecognizer:
-        //     GestureRecognizerFactoryWithHandlers<CustomPanGestureRecognizer>(
-        //   () => CustomPanGestureRecognizer(
-        //       onPanDown: onPanDown,
-        //       onPanUpdate: onPanUpdate,
-        //       onPanEnd: onPanEnd),
-        //   (CustomPanGestureRecognizer instance) {},
-        // ),
-      },
-      child: child,
-    );
-  }
-}
+// class CustomMultiTouchDetector extends StatelessWidget {
+//   final Widget child;
+//   final OnUpdate onUpdate;
+//   final OnUpdateDraw onUpdateDraw;
+//   final OnUpdateDrawEnd onUpdateDrawEnd;
+//
+//   CustomMultiTouchDetector(
+//       {this.child,
+//       this.onUpdate,
+//   this.onUpdateDraw,
+//       this.onUpdateDrawEnd,}
+//       );
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return RawGestureDetector(
+//       gestures: <Type, GestureRecognizerFactory>{
+//         CustomVerticalMultiDragGestureRecognizer:
+//             GestureRecognizerFactoryWithHandlers<
+//                 CustomVerticalMultiDragGestureRecognizer>(
+//           () => CustomVerticalMultiDragGestureRecognizer(),
+//           (CustomVerticalMultiDragGestureRecognizer instance) {
+//             instance.onStart = (Offset position) {
+//               return CustomDrag(
+//                   events: instance.events,
+//                   onUpdate: onUpdate,
+//                    onUpdateDraw: onUpdateDraw,
+//                 onUpdateDrawEnd:onUpdateDrawEnd,
+//               );
+//             };
+//           },
+//         ),
+//         // CustomPanGestureRecognizer:
+//         //     GestureRecognizerFactoryWithHandlers<CustomPanGestureRecognizer>(
+//         //   () => CustomPanGestureRecognizer(
+//         //       onPanDown: onPanDown,
+//         //       onPanUpdate: onPanUpdate,
+//         //       onPanEnd: onPanEnd),
+//         //   (CustomPanGestureRecognizer instance) {},
+//         // ),
+//       },
+//       child: child,
+//     );
+//   }
+// }
 
 class CustomDrag extends Drag {
   final List<PointerDownEvent> events;
@@ -58,13 +58,14 @@ class CustomDrag extends Drag {
   final OnUpdateDraw onUpdateDraw;
   final OnUpdateDrawEnd onUpdateDrawEnd;
 
-  CustomDrag({this.onUpdateDrawEnd, this.events, this.onUpdate, this.onUpdateDraw});
+  CustomDrag(
+      {this.onUpdateDrawEnd, this.events, this.onUpdate, this.onUpdateDraw});
 
   @override
   void update(DragUpdateDetails details) {
     super.update(details);
     final delta = details.delta;
-    if(events.length == 1) {
+    if (events.length == 1) {
       // print('1 finger local ${details.localPosition}, global ${details.globalPosition}');
       onUpdateDraw?.call(DragUpdateDetails(
         sourceTimeStamp: details.sourceTimeStamp,
@@ -101,21 +102,21 @@ class CustomDrag extends Drag {
   }
 }
 
-class CustomVerticalMultiDragGestureRecognizer
-    extends MultiDragGestureRecognizer<_CustomVerticalPointerState> {
-  final List<PointerDownEvent> events = [];
-
-  @override
-  createNewPointerState(PointerDownEvent event) {
-    events.add(event);
-    return _CustomVerticalPointerState(event.position, onDisposeState: () {
-      events.remove(event);
-    });
-  }
-
-  @override
-  String get debugDescription => 'custom vertical multidrag';
-}
+// class CustomVerticalMultiDragGestureRecognizer
+//     extends MultiDragGestureRecognizer<_CustomVerticalPointerState> {
+//   final List<PointerDownEvent> events = [];
+//
+//   @override
+//   createNewPointerState(PointerDownEvent event) {
+//     events.add(event);
+//     return _CustomVerticalPointerState(event.position, onDisposeState: () {
+//       events.remove(event);
+//     });
+//   }
+//
+//   @override
+//   String get debugDescription => 'custom vertical multidrag';
+// }
 
 typedef OnDisposeState();
 

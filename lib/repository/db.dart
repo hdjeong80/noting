@@ -25,9 +25,8 @@ class NotingDatabase {
     // open the database
     _db = await databaseFactoryIo.openDatabase(_dbPath);
     if (gisDatabaseLoaded) {
-      print('registered');
     } else {
-      print('new');
+      print('database loaded');
       gisDatabaseLoaded = true;
       GetIt.I.registerSingleton<Database>(_db);
       GetIt.I
@@ -36,16 +35,24 @@ class NotingDatabase {
     repo = GetIt.I.get();
 
     gNotesSnapshot = await gNotingDatabase.repo.getAllNotes();
+    // if (gNotesSnapshot == null) {
+    //   gNotesSnapshot = <NoteModel>[];
+    // }
   }
 
   loadNotes() async {
     final notes = await repo.getAllNotes();
+    if (notes == null) {
+      print('loadNotes Fail');
+    }
     gNotesSnapshot = notes;
+    print(notes);
 
     // setState(() => gNotesSnapshot = notes);
   }
 
   addNewNote() async {
+    print('add note');
     await repo.insertNote(NoteModel(
       createTime: DateFormat('yyyy.MM.dd').format(DateTime.now()),
       recentUpdateTime: DateFormat('yyyy.MM.dd').format(DateTime.now()),

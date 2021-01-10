@@ -23,7 +23,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.0
   painter: ^0.4.0
   linked_scroll_controller: ^0.1.2
   keyboard_avoider: ^0.1.2
@@ -46,12 +46,11 @@ dependencies:
   path_provider: ^1.6.24
   sembast: ^2.4.8+1
   get_it: ^4.0.2
+  share: ^0.6.5+4
 
 
 dev_dependencies:
   flutter_test:
-    sdk: flutter
-  integration_test:
     sdk: flutter
 
 flutter:

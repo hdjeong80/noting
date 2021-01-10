@@ -254,6 +254,9 @@ class TextSizePickerDialog extends StatelessWidget {
               Spacer(),
             ],
           ),
+          SizedBox(
+            height: 30,
+          ),
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,

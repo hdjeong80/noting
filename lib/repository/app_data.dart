@@ -38,6 +38,7 @@ class ConfigConst {
   static final textSizeMax = 35.0;
 
   static final floatingActionButtonSize = 56.0;
+  static double colorPickerSizerReduceFactor = 0.7;
 }
 
 final LinkedScrollControllerGroup gScrollControllers =
@@ -61,6 +62,7 @@ List<NoteModel> gNotesSnapshot;
 NoteModel gCurrentNote;
 // int gCurrentNoteId;
 bool gisDatabaseLoaded = false;
+GlobalKey<AnimatedListState> gListKey = GlobalKey<AnimatedListState>();
 
 /* Provider variables */
 class AppData with ChangeNotifier {

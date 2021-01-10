@@ -87,6 +87,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     enableSuggestions: false,
                                     autocorrect: false,
                                     obscureText: true,
+                                    obscuringCharacter: '*',
                                     keyboardType: TextInputType.number,
                                     maxLength: 4,
                                     onChanged: (password) {
@@ -178,102 +179,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: Column(
             children: [
               Expanded(
-                child: ListView.builder(
+                child: AnimatedList(
+                  initialItemCount: gNotesSnapshot.length,
+                  key: gListKey,
                   padding: EdgeInsets.all(10),
-                  // itemCount: gTextNow.length > 0 ? 1 : 0,
-                  itemCount: gNotesSnapshot.length,
-                  itemBuilder: (context, index) {
-                    String text = gNotesSnapshot.elementAt(index).text;
-                    String dateStr = gNotesSnapshot.elementAt(index).createTime;
-                    double iconButtonSize = 17;
-                    // String dateStr =
-                    //     DateFormat('yyyy.MM.dd').format(DateTime.now());
-                    String textTitle = '';
-                    if (text.indexOf('\n') > 0) {
-                      textTitle = text.substring(0, text.indexOf('\n'));
-                    } else {
-                      if (textTitle.length > 10) {
-                        textTitle = textTitle.substring(0, 10);
-                      } else {
-                        textTitle = text;
-                      }
-                    }
-                    String textContent = text.replaceAll('\n', ' ');
-
-                    if (textTitle.length > 10) {
-                      textTitle = textTitle.substring(0, 10);
-                    }
-                    if (textContent.length > 100) {
-                      textContent = textContent.substring(0, 100) + '...';
-                    }
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 0),
-                      child: Card(
-                        elevation: 0.5,
-                        child: ListTile(
-                          onTap: () {
-                            gCurrentNote = gNotesSnapshot.elementAt(index);
-                            gTextEditingController.text = gCurrentNote.text;
-
-                            Navigator.pop(context);
-                            context.read<AppData>().isHistoryScreen = false;
-                          },
-                          title: Row(
-                            children: [
-                              Text(textTitle),
-                              Spacer(),
-                              Text(dateStr),
-                              SizedBox(
-                                width: iconButtonSize + 20,
-                                child: IconButton(
-                                  padding: EdgeInsets.all(1),
-                                  iconSize: iconButtonSize,
-                                  icon: ImageIcon(
-                                      AssetImage('assets/share_icon.png')),
-                                  onPressed: () {
-                                    // showErrorSnackBar(context);
-                                  },
-                                ),
-                              ),
-                              SizedBox(
-                                width: iconButtonSize + 20,
-                                child: IconButton(
-                                  padding: EdgeInsets.all(1),
-                                  iconSize: iconButtonSize,
-                                  icon: ImageIcon(
-                                      AssetImage('assets/delete.png')),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (gNotesSnapshot.elementAt(index).id ==
-                                          gCurrentNote.id) {
-                                        // showErrorSnackBar(context,
-                                        showAlert(context,
-                                            'The note is currently being edited.');
-                                      } else {
-                                        gNotingDatabase.deleteNote(
-                                            gNotesSnapshot.elementAt(index));
-                                      }
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(textContent),
-                            ],
-                          ),
-
-                          // trailing: Icon(Icons.more_vert),
-
-                          // isThreeLine: true,
-                        ),
-                      ),
-                    );
-                  },
+                  itemBuilder: (BuildContext context, int index,
+                          Animation<double> animation) =>
+                      _listItem(context, index, animation),
                 ),
               ),
               // SizedBox(
@@ -318,7 +230,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 }
 
-void showDeleteDialog(BuildContext context) async {
+void showDeleteDialog(BuildContext context, int index) async {
   String result = await showDialog(
     context: context,
     barrierDismissible: false, // user must tap button!
@@ -335,8 +247,14 @@ void showDeleteDialog(BuildContext context) async {
           FlatButton(
             child: Text('Yes'),
             onPressed: () {
+              gListKey.currentState.removeItem(
+                index,
+                (context, animation) => _listItem(context, index, animation),
+                duration: Duration(milliseconds: 200),
+              );
+              gNotingDatabase.deleteNote(gNotesSnapshot.elementAt(index));
+
               Navigator.pop(context);
-              // showErrorSnackBar(context);
             },
           ),
         ],
@@ -381,4 +299,92 @@ _clearText() {
 
 _clearDrawing() {
   gPainterController.clear();
+}
+
+Widget _listItem(BuildContext context, int index, Animation<double> animation) {
+  String text =
+      animation.isCompleted ? gNotesSnapshot.elementAt(index).text : '';
+  String dateStr =
+      animation.isCompleted ? gNotesSnapshot.elementAt(index).createTime : '';
+  double iconButtonSize = 17;
+  String textTitle = '';
+  if (text.indexOf('\n') > 0) {
+    textTitle = text.substring(0, text.indexOf('\n'));
+  } else {
+    if (textTitle.length > 10) {
+      textTitle = textTitle.substring(0, 10);
+    } else {
+      textTitle = text;
+    }
+  }
+  String textContent = text.replaceAll('\n', ' ');
+
+  if (textTitle.length > 10) {
+    textTitle = textTitle.substring(0, 10);
+  }
+  if (textContent.length > 100) {
+    textContent = textContent.substring(0, 100) + '...';
+  }
+
+  return SizeTransition(
+    // position: Tween<Offset>(
+    //   begin: const Offset(-1, 0),
+    //   end: Offset(0, 0),
+    // ).animate(animation),
+    axis: Axis.vertical,
+    sizeFactor: animation,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 0),
+      child: Card(
+        elevation: 0.5,
+        child: ListTile(
+          onTap: () {
+            gCurrentNote = gNotesSnapshot.elementAt(index);
+            gTextEditingController.text = gCurrentNote.text;
+
+            Navigator.pop(context);
+            context.read<AppData>().isHistoryScreen = false;
+          },
+          title: Row(
+            children: [
+              Text(textTitle),
+              Spacer(),
+              Text(dateStr),
+              // SizedBox(
+              //   width: iconButtonSize + 20,
+              //   child: IconButton(
+              //     padding: EdgeInsets.all(1),
+              //     iconSize: iconButtonSize,
+              //     icon: ImageIcon(AssetImage('assets/share_icon.png')),
+              //     onPressed: () {},
+              //   ),
+              // ),
+              SizedBox(
+                width: iconButtonSize + 20,
+                child: IconButton(
+                  padding: EdgeInsets.all(1),
+                  iconSize: iconButtonSize,
+                  icon: ImageIcon(AssetImage('assets/delete.png')),
+                  onPressed: () {
+                    if (gNotesSnapshot.elementAt(index).id == gCurrentNote.id) {
+                      // showErrorSnackBar(context,
+                      showAlert(context, 'The note is currently being edited.');
+                    } else {
+                      showDeleteDialog(context, index);
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(textContent),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }

@@ -19,12 +19,27 @@ class App extends StatelessWidget {
         future: gNotingDatabase.openDatabase(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            print('a');
+            // return FutureBuilder<double>(
+            //     future: whenNotZero(
+            //       Stream<double>.periodic(Duration(milliseconds: 100),
+            //           (x) => MediaQuery.of(context).size.height),
+            //     ),
+            //     builder: (context, snapshot) {
+            //       if (snapshot.hasData) {
             return FirstScreen();
+            //   } else {
+            //     return Material(
+            //       child: Center(
+            //         child: CircularProgressIndicator(),
+            //       ),
+            //     );
+            //   }
+            // });
           } else {
             return Material(
               child: Center(
-                child: CircularProgressIndicator(),
+                // child: CircularProgressIndicator(),
+                child: Container(),
               ),
             );
           }
@@ -33,5 +48,13 @@ class App extends StatelessWidget {
       initialRoute: ScreenRoutes.initialRoute,
       routes: ScreenRoutes.routes,
     );
+  }
+}
+
+Future<double> whenNotZero(Stream<double> source) async {
+  await for (double value in source) {
+    if (value > 0) {
+      return value;
+    }
   }
 }

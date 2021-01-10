@@ -13,6 +13,10 @@ class SpeedDialController extends ChangeNotifier {
   unfold() {
     if (_animationController.isDismissed == false) {
       _animationController.reverse();
+    } else {
+      _animationController.forward();
     }
   }
+
+  toggle() {}
 }
