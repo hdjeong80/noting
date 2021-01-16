@@ -341,6 +341,7 @@ Widget _listItem(BuildContext context, int index, Animation<double> animation) {
           onTap: () {
             gCurrentNote = gNotesSnapshot.elementAt(index);
             gTextEditingController.text = gCurrentNote.text;
+            gPainterController.clear();
 
             Navigator.pop(context);
             context.read<AppData>().isHistoryScreen = false;

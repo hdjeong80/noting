@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
@@ -74,13 +72,24 @@ class NotingDatabase {
     loadNotes();
   }
 
-  editNote(
-      {NoteModel oldNote,
-      String text,
-      List<MapEntry<Path, Paint>> draw}) async {
+  editNote({
+    NoteModel oldNote,
+    String text,
+    // List<List<double>> drawX,
+    // List<List<double>> drawY,
+    // List<double> drawWidth,
+    // List<int> drawColorCode,
+    // List<bool> drawEraseMode,
+  }) async {
+    // map to datas
+
     repo.updateNote(oldNote.copyWith(
         text: text,
-        draw: draw,
+        // drawX: drawX,
+        // drawY: drawY,
+        // drawWidth: drawWidth,
+        // drawColorCode: drawColorCode,
+        // drawEraseMode: drawEraseMode,
         recentUpdateTime: DateFormat('yyyy.MM.dd').format(DateTime.now())));
   }
 }
@@ -128,10 +137,24 @@ class NoteModel {
   final String createTime;
   String recentUpdateTime;
   String text;
-  List<MapEntry<Path, Paint>> draw;
+  // List<MapEntry<Path, Paint>> draw;
+  // List<List<double>> drawX;
+  // List<List<double>> drawY;
+  // List<double> drawWidth;
+  // List<int> drawColorCode;
+  // List<bool> drawEraseMode;
 
-  NoteModel(
-      {this.id, this.createTime, this.recentUpdateTime, this.text, this.draw});
+  NoteModel({
+    this.id,
+    this.createTime,
+    this.recentUpdateTime,
+    this.text,
+    // this.drawX,
+    // this.drawY,
+    // this.drawWidth,
+    // this.drawColorCode,
+    // this.drawEraseMode,
+  });
 
   Map<String, dynamic> toMap() {
     return {
@@ -139,7 +162,11 @@ class NoteModel {
       'createTime': this.createTime,
       'recentUpdateTime': this.recentUpdateTime,
       'text': this.text,
-      'draw': this.draw,
+      // 'drawX': this.drawX,
+      // 'drawY': this.drawY,
+      // 'drawWidth': this.drawWidth,
+      // 'drawColorCode': this.drawColorCode,
+      // 'drawEraseMode': this.drawEraseMode,
     };
   }
 
@@ -149,22 +176,35 @@ class NoteModel {
       createTime: map['createTime'],
       recentUpdateTime: map['recentUpdateTime'],
       text: map['text'],
-      draw: map['draw'],
+      // drawX: map['drawX'],
+      // drawY: map['drawY'],
+      // drawWidth: map['drawWidth'],
+      // drawColorCode: map['drawColorCode'],
+      // drawEraseMode: map['drawEraseMode'],
     );
   }
 
-  NoteModel copyWith(
-      {int id,
-      String createTime,
-      String recentUpdateTime,
-      String text,
-      List<MapEntry<Path, Paint>> draw}) {
+  NoteModel copyWith({
+    int id,
+    String createTime,
+    String recentUpdateTime,
+    String text,
+    // List<List<double>> drawX,
+    // List<List<double>> drawY,
+    // List<double> drawWidth,
+    // List<int> drawColorCode,
+    // List<bool> drawEraseMode,
+  }) {
     return NoteModel(
       id: id ?? this.id,
       createTime: createTime ?? this.createTime,
       recentUpdateTime: recentUpdateTime ?? this.recentUpdateTime,
       text: text ?? this.text,
-      draw: draw ?? this.draw,
+      // drawX: drawX ?? this.drawX,
+      // drawY: drawY ?? this.drawY,
+      // drawWidth: drawWidth ?? this.drawWidth,
+      // drawColorCode: drawColorCode ?? this.drawColorCode,
+      // drawEraseMode: drawEraseMode ?? this.drawEraseMode,
     );
   }
 }

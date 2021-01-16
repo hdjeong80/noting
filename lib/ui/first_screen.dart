@@ -18,6 +18,7 @@ import 'package:painter/painter.dart';
 import 'package:provider/provider.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:share/share.dart';
 import 'package:zefyr/zefyr.dart';
 
 import '../config.dart';
@@ -83,6 +84,16 @@ class _FirstScreenState extends State<FirstScreen>
       gTextEditingController = TextEditingController();
     } else {
       gTextEditingController = TextEditingController(text: gCurrentNote.text);
+      // if (gCurrentNote.drawX != null) {
+      //   gPainterController.replacePaths(
+      //     x: gCurrentNote.drawX,
+      //     y: gCurrentNote.drawY,
+      //     width: gCurrentNote.drawWidth,
+      //     colorCode: gCurrentNote.drawColorCode,
+      //     eraseMode: gCurrentNote.drawEraseMode,
+      //   );
+      // }
+      // gPainterController.replacePaths(gCurrentNote.draw);
     }
     _animationController = AnimationController(
       vsync: this,
@@ -101,7 +112,6 @@ class _FirstScreenState extends State<FirstScreen>
         Future.delayed(Duration(milliseconds: 500))
             .then((value) => gTextFocusNode.requestFocus());
         // SystemChannels.textInput.invokeMethod('TextInput.show');
-        print('asdf');
       }
     });
     // SystemChannels.textInput.invokeMethod('TextInput.show');
@@ -118,35 +128,26 @@ class _FirstScreenState extends State<FirstScreen>
   }
 
   void _capturePng() async {
-    File _imageFile = null;
+    context.read<AppData>().isCapturing = true;
     screenshotController
-        .capture(delay: Duration(milliseconds: 20), pixelRatio: 1.5)
+        .capture(delay: Duration(milliseconds: 100), pixelRatio: 1.5)
         .then((File image) async {
-      //print("Capture Done");
-      setState(() {
-        _imageFile = image;
-      });
-      // final result = await ImageGallerySaver.saveImage(image.readAsBytesSync());
+      try {
+        print("Capture Done");
+        Share.shareFiles([image.path]);
+        context.read<AppData>().isCapturing = false;
+      } on PlatformException catch (e) {
+        print("Exception while taking screenshot:" + e.toString());
+        context.read<AppData>().isCapturing = false;
+      }
+      // Share.
 
-      print("File Saved to Gallery");
+      // print("File Saved to Gallery");
     }).catchError((onError) {
+      print('Capture Error');
       print(onError);
+      context.read<AppData>().isCapturing = false;
     });
-    // try {
-    //   print('capture');
-    //   RenderRepaintBoundary boundary =
-    //       _captureKey.currentContext.findRenderObject();
-    //   ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-    //   ByteData byteData =
-    //       await image.toByteData(format: ui.ImageByteFormat.png);
-    //   var pngBytes = byteData.buffer.asUint8List();
-    //   var bs64 = base64Encode(pngBytes);
-    //   var result = await ImageGallerySaver.saveImage(pngBytes,
-    //       quality: 60, name: "hello");
-    //   print(result);
-    // } catch (e) {
-    //   print(e);
-    // }
   }
 
   Future<void> _iosRequestTrack() async {
@@ -165,69 +166,66 @@ class _FirstScreenState extends State<FirstScreen>
       _offset = Offset(0, 0);
     }
 
-    return Scaffold(
-      key: _scaffoldKey,
-      resizeToAvoidBottomInset: false,
-      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      // appBar: AppBar(
-      //   // backgroundColor: Colors.grey,
-      //   title: const Text('Noting Test'),
-      // ),
-      floatingActionButton: _buildFloatingActionButton(),
-      // floatingActionButton: FloatingActionButton(
-      //
-      //   child: Icon(Icons.add),
-      //   onPressed: () {
-      //
-      //   },
-      // ),
-      body: SafeArea(
-        top: true,
-        bottom: false,
-        child: Container(
-          decoration: context.watch<AppData>().wallpaperMode ==
-                  WallpaperModes.photo
-              ? BoxDecoration(
-                  image: DecorationImage(
-                    image: context.watch<AppData>().wallpaperImageFile == null
-                        ? AssetImage('assets/empty.png')
-                        : FileImage(
-                            context.watch<AppData>().wallpaperImageFile),
-                    fit: BoxFit.cover,
-                  ),
-                )
-              : BoxDecoration(
-                  color: context.watch<AppData>().pickWallpaperColor,
-                ),
-          child: Stack(
-            children: [
-              // _zefyrTextField(),
-              Screenshot(
-                key: _captureKey,
-                controller: screenshotController,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: ConfigConst.scaffoldBodyPadding),
-                  child: SafeArea(
-                    child: SizedBox(
-                      height: gDeviceHeight * ConfigConst.maxNotePages,
-                      child: Stack(
-                        children: [
-                          _textField(),
-                          _drawCanvas(),
-                        ],
+    return WillPopScope(
+      onWillPop: () async {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+        });
+
+        return false;
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        resizeToAvoidBottomInset: false,
+        floatingActionButton: _buildFloatingActionButton(),
+        body: SafeArea(
+          top: true,
+          bottom: false,
+          child: Screenshot(
+            key: _captureKey,
+            controller: screenshotController,
+            child: Container(
+              decoration: context.watch<AppData>().wallpaperMode ==
+                      WallpaperModes.photo
+                  ? BoxDecoration(
+                      image: DecorationImage(
+                        image: context.watch<AppData>().wallpaperImageFile ==
+                                null
+                            ? AssetImage('assets/empty.png')
+                            : FileImage(
+                                context.watch<AppData>().wallpaperImageFile),
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : BoxDecoration(
+                      color: context.watch<AppData>().pickWallpaperColor,
+                    ),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ConfigConst.scaffoldBodyPadding),
+                    child: SafeArea(
+                      child: SizedBox(
+                        height: gDeviceHeight * ConfigConst.maxNotePages,
+                        child: Stack(
+                          children: [
+                            _textField(),
+                            _drawCanvas(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  _auxButtons(),
+                  WallpaperPicker(),
+                ],
               ),
-              _auxButtons(),
-              WallpaperPicker(),
-            ],
+            ),
           ),
         ),
+        // bottomNavigationBar: BottomAppBar(),
       ),
-      // bottomNavigationBar: BottomAppBar(),
     );
   }
 
@@ -379,65 +377,6 @@ class _FirstScreenState extends State<FirstScreen>
           key: _drawCanvasKey,
           physics: NeverScrollableScrollPhysics(),
           controller: gDrawScrollController,
-          // child: CustomMultiTouchDetector(
-          //   onUpdate: (details) {
-          //     setTimerTwoFinger();
-          //     setState(() {
-          //       if ((gDrawScrollController.offset <= 0) &&
-          //           (details.delta.dy > 0)) {
-          //         gDrawScrollController.jumpTo(gDrawScrollController.offset);
-          //       } else {
-          //         gDrawScrollController
-          //             .jumpTo(gDrawScrollController.offset - details.delta.dy);
-          //       }
-          //     });
-          //     if (context.read<AppData>().isEraserMode) {
-          //       if ((gErasePoints.length != 0) && (gErasePoints.last != null)) {
-          //         gDrawPoints.removeLast();
-          //       }
-          //     } else {
-          //       if ((gDrawPoints.length != 0) && (gDrawPoints.last != null)) {
-          //         gDrawPoints.removeLast();
-          //         gDrawPointsNew.removeLast();
-          //       }
-          //     }
-          //   },
-          // onUpdateDraw: (details) {
-          //   RenderBox getBox =
-          //       _drawCanvasKey.currentContext.findRenderObject();
-          //   var local =
-          //       getBox.globalToLocal(details.globalPosition) + _offset;
-          //   if (!isTwoFingerScrollAndTimerUnder100ms() &&
-          //       (context.read<AppData>().isDrawMode)) {
-          //     setState(() {
-          //       if (context.read<AppData>().isEraserMode) {
-          //         gErasePoints.add(local);
-          //       } else {
-          //         gDrawPoints.add(local);
-          //         gDrawPointsNew.add(Point(local.dx, local.dy));
-          //       }
-          //     });
-          //   }
-          // },
-          // onUpdateDrawEnd: (details) {
-          //   if (context.read<AppData>().isDrawMode)
-          //     setState(() {
-          //       if (context.read<AppData>().isEraserMode) {
-          //         gErasePoints.add(null);
-          //       } else {
-          //         gDrawPoints.add(null);
-          //         gDrawPointsNew.add(null);
-          //       }
-          //     });
-          // },
-          // child: CustomPaint(
-          //   painter: CanvasCustomPainter(
-          //       points: gDrawPoints, eraserPoints: gErasePoints, offset: Offset(0, 0)),
-          //   size: Size(
-          //     gDeviceWidth,
-          //     gDeviceHeight * maxNotePages,
-          //   ),
-          // ),
           child: SizedBox(
             height: gDeviceHeight * ConfigConst.maxNotePages,
             child: Painter(gPainterController),
@@ -504,7 +443,11 @@ class _FirstScreenState extends State<FirstScreen>
               gNotingDatabase.editNote(oldNote: gCurrentNote, text: text);
             },
             // scrollPhysics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            enableSuggestions: false,
+            enableInteractiveSelection: false,
             autocorrect: false,
+            autofillHints: null,
+
             enabled: !(context.watch<AppData>().isDrawMode),
             // scrollController: gTextScrollController,
             focusNode: gTextFocusNode,
@@ -757,7 +700,12 @@ class _FirstScreenState extends State<FirstScreen>
       },
     );
 
-    result.then((value) => context.read<AppData>().isPopupScreen = false);
+    result.then((value) {
+      context.read<AppData>().isPopupScreen = false;
+      if (context.read<AppData>().isTextEditingMode)
+        Future.delayed(Duration(milliseconds: 500))
+            .then((value) => gTextFocusNode.requestFocus());
+    });
   }
 
   void _popupSizePicker() async {
@@ -793,25 +741,32 @@ class _FirstScreenState extends State<FirstScreen>
 
         if (context.watch<AppData>().isDrawMode) {
           return DrawSizePickerDialog(
-              inkwellDefaultSize: columnInkwellDefaultSize,
-              sizeMin: sizeMin,
-              sizeSmall: sizeSmall,
-              sizeNormal: sizeNormal,
-              sizeBig: sizeBig,
-              sizeMax: sizeMax);
+            inkwellDefaultSize: columnInkwellDefaultSize,
+            sizeMin: sizeMin,
+            sizeSmall: sizeSmall,
+            sizeNormal: sizeNormal,
+            sizeBig: sizeBig,
+            sizeMax: sizeMax,
+          );
         } else {
           return TextSizePickerDialog(
-              inkwellDefaultSize: rowInkwellDefaultSize,
-              sizeMin: sizeMin,
-              sizeSmall: sizeSmall,
-              sizeNormal: sizeNormal,
-              sizeBig: sizeBig,
-              sizeMax: sizeMax);
+            inkwellDefaultSize: rowInkwellDefaultSize,
+            sizeMin: sizeMin,
+            sizeSmall: sizeSmall,
+            sizeNormal: sizeNormal,
+            sizeBig: sizeBig,
+            sizeMax: sizeMax,
+          );
         }
       },
     );
 
-    result.then((value) => context.read<AppData>().isPopupScreen = false);
+    result.then((value) {
+      context.read<AppData>().isPopupScreen = false;
+      if (context.read<AppData>().isTextEditingMode)
+        Future.delayed(Duration(milliseconds: 200))
+            .then((value) => gTextFocusNode.requestFocus());
+    });
   }
 
   _setModeDrawing() {

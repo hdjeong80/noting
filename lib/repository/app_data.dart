@@ -1,3 +1,4 @@
+import 'dart:core';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -31,7 +32,7 @@ class ConfigConst {
   static final eraseSizeBig = 24.0;
   static final eraseSizeMax = 30.0;
 
-  static final textSizeMin = 15.0;
+  static final textSizeMin = 12.0;
   static final textSizeSmall = 20.0;
   static final textSizeNormal = 25.0;
   static final textSizeBig = 30.0;
@@ -63,6 +64,11 @@ NoteModel gCurrentNote;
 // int gCurrentNoteId;
 bool gisDatabaseLoaded = false;
 GlobalKey<AnimatedListState> gListKey = GlobalKey<AnimatedListState>();
+List<double> gDrawRecorderX;
+List<double> gDrawRecorderY;
+List<double> gDrawRecorderWidth;
+List<int> gDrawRecorderColorCode;
+List<bool> gDrawRecorderEraseMode;
 
 /* Provider variables */
 class AppData with ChangeNotifier {
