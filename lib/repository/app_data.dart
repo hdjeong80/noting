@@ -18,8 +18,6 @@ class ConfigConst {
   static final maxNotePages = 255;
   static final scaffoldBodyPadding = 16.0;
 
-  static final versionString = 'v0.3';
-
   static final drawSizeMin = 1.0;
   static final drawSizeSmall = 3.0;
   static final drawSizeNormal = 5.0;
@@ -32,7 +30,7 @@ class ConfigConst {
   static final eraseSizeBig = 24.0;
   static final eraseSizeMax = 30.0;
 
-  static final textSizeMin = 12.0;
+  static final textSizeMin = 13.0;
   static final textSizeSmall = 20.0;
   static final textSizeNormal = 25.0;
   static final textSizeBig = 30.0;
@@ -123,6 +121,7 @@ class AppData with ChangeNotifier {
 
   set pickTextColor(Color pickTextColor) {
     _pickTextColor = pickTextColor;
+    // print('${_pickTextColor.value.toRadixString(16)}');
     notifyListeners();
   }
 

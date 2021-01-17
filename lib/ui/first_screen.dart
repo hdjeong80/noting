@@ -703,8 +703,15 @@ class _FirstScreenState extends State<FirstScreen>
     result.then((value) {
       context.read<AppData>().isPopupScreen = false;
       if (context.read<AppData>().isTextEditingMode)
-        Future.delayed(Duration(milliseconds: 500))
-            .then((value) => gTextFocusNode.requestFocus());
+        Future.delayed(Duration(milliseconds: 500)).then((value) {
+          gTextFocusNode.requestFocus();
+          if (!(context.read<AppData>().isDrawMode)) {
+            gNotingDatabase.editNote(
+              oldNote: gCurrentNote,
+              textColorCode: context.read<AppData>().pickTextColor.value,
+            );
+          }
+        });
     });
   }
 
@@ -764,8 +771,15 @@ class _FirstScreenState extends State<FirstScreen>
     result.then((value) {
       context.read<AppData>().isPopupScreen = false;
       if (context.read<AppData>().isTextEditingMode)
-        Future.delayed(Duration(milliseconds: 200))
-            .then((value) => gTextFocusNode.requestFocus());
+        Future.delayed(Duration(milliseconds: 200)).then((value) {
+          gTextFocusNode.requestFocus();
+          if (!(context.read<AppData>().isDrawMode)) {
+            gNotingDatabase.editNote(
+              oldNote: gCurrentNote,
+              textSize: context.read<AppData>().textSize,
+            );
+          }
+        });
     });
   }
 

@@ -200,6 +200,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       adSize: AdmobBannerSize.ADAPTIVE_BANNER(
                           width: gDeviceWidth.toInt()),
                       adUnitId: AdManager.bannerAdUnitId,
+                      nonPersonalizedAds: true,
                     ),
               SizedBox(
                 height: gDeviceHeight / 26,
@@ -342,6 +343,12 @@ Widget _listItem(BuildContext context, int index, Animation<double> animation) {
             gCurrentNote = gNotesSnapshot.elementAt(index);
             gTextEditingController.text = gCurrentNote.text;
             gPainterController.clear();
+
+            print('current note text: ${gCurrentNote.text}');
+            print('current note textSize: ${gCurrentNote.textSize}');
+            print(
+                'current note textColor: ${gCurrentNote.textColorCode.toRadixString(16)}');
+            print('current note text: ${gCurrentNote.draw}');
 
             Navigator.pop(context);
             context.read<AppData>().isHistoryScreen = false;

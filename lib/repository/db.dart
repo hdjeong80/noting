@@ -44,8 +44,6 @@ class NotingDatabase {
       print('loadNotes Fail');
     }
     gNotesSnapshot = notes;
-    print(notes);
-
     // setState(() => gNotesSnapshot = notes);
   }
 
@@ -55,14 +53,18 @@ class NotingDatabase {
       createTime: DateFormat('yyyy.MM.dd').format(DateTime.now()),
       recentUpdateTime: DateFormat('yyyy.MM.dd').format(DateTime.now()),
       text: '',
+      textSize: ConfigConst.textSizeMin,
+      textColorCode: 0xff000000,
+      draw: '',
     ));
     loadNotes();
     // Future.wait([
     //   loadNotes(),
     // ] as Iterable<Future>)
     //     .then((value) => gCurrentNote = gNotesSnapshot.last);
-    Future.delayed(Duration(milliseconds: 100))
-        .then((value) => gCurrentNote = gNotesSnapshot.last);
+    Future.delayed(Duration(milliseconds: 100)).then((value) {
+      gCurrentNote = gNotesSnapshot.last;
+    });
 
     // return newNote;
   }
@@ -75,21 +77,17 @@ class NotingDatabase {
   editNote({
     NoteModel oldNote,
     String text,
-    // List<List<double>> drawX,
-    // List<List<double>> drawY,
-    // List<double> drawWidth,
-    // List<int> drawColorCode,
-    // List<bool> drawEraseMode,
+    double textSize,
+    int textColorCode,
+    String draw,
   }) async {
     // map to datas
 
     repo.updateNote(oldNote.copyWith(
         text: text,
-        // drawX: drawX,
-        // drawY: drawY,
-        // drawWidth: drawWidth,
-        // drawColorCode: drawColorCode,
-        // drawEraseMode: drawEraseMode,
+        textSize: textSize,
+        textColorCode: textColorCode,
+        draw: draw,
         recentUpdateTime: DateFormat('yyyy.MM.dd').format(DateTime.now())));
   }
 }
@@ -137,23 +135,18 @@ class NoteModel {
   final String createTime;
   String recentUpdateTime;
   String text;
-  // List<MapEntry<Path, Paint>> draw;
-  // List<List<double>> drawX;
-  // List<List<double>> drawY;
-  // List<double> drawWidth;
-  // List<int> drawColorCode;
-  // List<bool> drawEraseMode;
+  double textSize;
+  int textColorCode;
+  String draw;
 
   NoteModel({
     this.id,
     this.createTime,
     this.recentUpdateTime,
     this.text,
-    // this.drawX,
-    // this.drawY,
-    // this.drawWidth,
-    // this.drawColorCode,
-    // this.drawEraseMode,
+    this.textSize,
+    this.textColorCode,
+    this.draw,
   });
 
   Map<String, dynamic> toMap() {
@@ -162,11 +155,9 @@ class NoteModel {
       'createTime': this.createTime,
       'recentUpdateTime': this.recentUpdateTime,
       'text': this.text,
-      // 'drawX': this.drawX,
-      // 'drawY': this.drawY,
-      // 'drawWidth': this.drawWidth,
-      // 'drawColorCode': this.drawColorCode,
-      // 'drawEraseMode': this.drawEraseMode,
+      'textSize': this.textSize,
+      'textColorCode': this.textColorCode,
+      'draw': this.draw,
     };
   }
 
@@ -176,11 +167,9 @@ class NoteModel {
       createTime: map['createTime'],
       recentUpdateTime: map['recentUpdateTime'],
       text: map['text'],
-      // drawX: map['drawX'],
-      // drawY: map['drawY'],
-      // drawWidth: map['drawWidth'],
-      // drawColorCode: map['drawColorCode'],
-      // drawEraseMode: map['drawEraseMode'],
+      textSize: map['textSize'],
+      textColorCode: map['textColorCode'],
+      draw: map['draw'],
     );
   }
 
@@ -189,22 +178,18 @@ class NoteModel {
     String createTime,
     String recentUpdateTime,
     String text,
-    // List<List<double>> drawX,
-    // List<List<double>> drawY,
-    // List<double> drawWidth,
-    // List<int> drawColorCode,
-    // List<bool> drawEraseMode,
+    double textSize,
+    int textColorCode,
+    String draw,
   }) {
     return NoteModel(
       id: id ?? this.id,
       createTime: createTime ?? this.createTime,
       recentUpdateTime: recentUpdateTime ?? this.recentUpdateTime,
       text: text ?? this.text,
-      // drawX: drawX ?? this.drawX,
-      // drawY: drawY ?? this.drawY,
-      // drawWidth: drawWidth ?? this.drawWidth,
-      // drawColorCode: drawColorCode ?? this.drawColorCode,
-      // drawEraseMode: drawEraseMode ?? this.drawEraseMode,
+      textSize: textSize ?? this.textSize,
+      textColorCode: textColorCode ?? this.textColorCode,
+      draw: draw ?? this.draw,
     );
   }
 }
