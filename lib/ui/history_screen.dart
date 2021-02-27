@@ -1,13 +1,36 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:admob_flutter/admob_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:noting/home_widget/home_widget_provider.dart';
 import 'package:noting/repository/app_data.dart';
-import 'package:noting/ui/common_widget.dart';
+import 'package:noting/reusable/fapps_in_app_purchase.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../ad_manager.dart';
+import 'first_screen.dart';
+import 'widget_selector_dialog.dart';
 
 var _scaffoldKey = GlobalKey<ScaffoldState>();
+StreamSubscription<List<PurchaseDetails>> _subscription;
+
+void getRemoveAdsData(BuildContext context) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  context.read<AppData>().removeAds = prefs.getBool('removeAds') ?? false;
+}
+
+void sortSnapshot() {
+  gNotesSnapshot.sort((a, b) {
+    return b.createTime.compareTo(a.createTime);
+  });
+}
 
 class HistoryScreen extends StatefulWidget {
   @override
@@ -18,7 +41,34 @@ class _HistoryScreenState extends State<HistoryScreen> {
   TextEditingController _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    // setStatusBar();
+    initFappsInAppPurchase(_subscription);
+    getRemoveAdsData(context);
+    super.initState();
+  }
+
+  void setStatusBar() {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness:
+          Platform.isAndroid ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: Colors.black,
+      systemNavigationBarDividerColor: Colors.grey,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ));
+  }
+
+  @override
+  void dispose() {
+    // _subscription.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    sortSnapshot();
     return WillPopScope(
       onWillPop: () async {
         // hideSnackBar(context);
@@ -53,8 +103,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: [
               Text(
                 '  Password',
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style: GoogleFonts.overlock(
+                    color: Colors.black, fontWeight: FontWeight.bold),
+                // style:
+                //     TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               ),
               Spacer(),
               Switch(
@@ -70,10 +122,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           //   context.read<AppData>().uiPasswordStep = 0;
                           // }
                           return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15)),
                             title:
                                 (context.watch<AppData>().uiPasswordStep == 0)
-                                    ? Text('New Password')
-                                    : Text('Confirm Password'),
+                                    ? Text(
+                                        'New Password',
+                                        style: GoogleFonts.overlock(
+                                            // color: Colors.white,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    : Text(
+                                        'Confirm Password',
+                                        style: GoogleFonts.overlock(
+                                            // color: Colors.white,
+                                            fontWeight: FontWeight.bold),
+                                      ),
                             content: Row(
                               children: [
                                 Expanded(
@@ -124,6 +188,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                             Future.delayed(
                                                 Duration(milliseconds: 300),
                                                 () {
+                                              _savePassword(password);
                                               context
                                                   .read<AppData>()
                                                   .isPasswordCorrectUi = false;
@@ -167,6 +232,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           );
                         });
                   } else {
+                    _savePassword('');
                     context.read<AppData>().isLockPassword = false;
                     context.read<AppData>().uiPasswordStep = 0;
                   }
@@ -179,13 +245,52 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: Column(
             children: [
               Expanded(
-                child: AnimatedList(
-                  initialItemCount: gNotesSnapshot.length,
-                  key: gListKey,
-                  padding: EdgeInsets.all(10),
-                  itemBuilder: (BuildContext context, int index,
-                          Animation<double> animation) =>
-                      _listItem(context, index, animation),
+                child: Stack(
+                  children: [
+                    AnimatedList(
+                      initialItemCount: gNotesSnapshot.length,
+                      key: gListKey,
+                      padding: EdgeInsets.all(10),
+                      itemBuilder: (BuildContext context, int index,
+                              Animation<double> animation) =>
+                          _listItem(context, index, animation),
+                    ),
+                    Visibility(
+                      visible: Platform.isAndroid,
+                      child: Container(
+                        alignment: Alignment.bottomRight,
+                        padding: EdgeInsets.all(15),
+                        child: RaisedButton(
+                          color: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0),
+                              side: BorderSide(color: Colors.transparent)),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ImageIcon(
+                                AssetImage('assets/widget.png'),
+                                color: Colors.white,
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                'Select widget',
+                                style: GoogleFonts.overlock(
+                                  color: Colors.white,
+                                  // fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onPressed: () => showDialog(
+                              context: context,
+                              builder: (context) => WidgetSelectorDialog()),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               // SizedBox(
@@ -194,7 +299,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               //     image: AssetImage('assets/ads.png'),
               //   ),
               // ),
-              context.watch<AppData>().isAdmobRemoved
+              // context.watch<AppData>().removeAds
+              true
                   ? Container()
                   : AdmobBanner(
                       adSize: AdmobBannerSize.ADAPTIVE_BANNER(
@@ -209,17 +315,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     color: Colors.blue,
                     child: Center(
                       child: Text(
-                        context.watch<AppData>().isAdmobRemoved
+                        context.watch<AppData>().removeAds
                             ? 'Buy Noting\'s Developer a coffee!!'
                             : 'Buy Noting\'s Developer a coffee!! (Remove ads)',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        // style: TextStyle(
+                        //     color: Colors.white, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.overlock(
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
                   onTap: () {
-                    showPayDialog(context);
+                    fappsProcessInAppPurchase(context);
                   },
                 ),
               ),
@@ -229,63 +337,76 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
+
+  void _savePassword(String password) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('password', password);
+  }
 }
 
 void showDeleteDialog(BuildContext context, int index) async {
   String result = await showDialog(
     context: context,
-    barrierDismissible: false, // user must tap button!
+    barrierDismissible: true,
     builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Delete?'),
+      return CupertinoAlertDialog(
+        title: Text(
+          'Delete?',
+          style: GoogleFonts.overlock(fontSize: 20),
+        ),
         actions: <Widget>[
           FlatButton(
-            child: Text('No'),
+            child: Text(
+              'No',
+              style: GoogleFonts.overlock(
+                  fontSize: 17, fontWeight: FontWeight.w800),
+            ),
             onPressed: () {
               Navigator.pop(context);
             },
           ),
           FlatButton(
-            child: Text('Yes'),
+            child: Text(
+              'Yes',
+              style: GoogleFonts.overlock(
+                  color: Colors.blue,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800),
+              // style: TextStyle(color: Colors.blue),
+            ),
             onPressed: () {
-              gListKey.currentState.removeItem(
-                index,
-                (context, animation) => _listItem(context, index, animation),
-                duration: Duration(milliseconds: 200),
-              );
-              gNotingDatabase.deleteNote(gNotesSnapshot.elementAt(index));
+              int key = gNotesSnapshot.elementAt(index).id;
+              Future.delayed(Duration(milliseconds: 100)).then((value) {
+                gListKey.currentState.removeItem(
+                  index,
+                  (context, animation) => _listItem(context, index, animation),
+                  duration: Duration(milliseconds: 200),
+                );
+              });
+
+              print(
+                  'delete $key, ${context.read<AppData>().homeScreenWidgetKey}');
+              if (key == context.read<AppData>().homeScreenWidgetKey) {
+                context.read<AppData>().homeScreenWidgetKey = -1;
+                context.read<AppData>().homeScreenWidgetIndex = -1;
+                homeWidgetProvider.erase();
+              }
+              if (gNotesSnapshot.elementAt(index).id == gCurrentNote.id) {
+                gNotingDatabase.addNewNote();
+                context.read<AppData>().textSize = ConfigConst.textSizeMin;
+                context.read<AppData>().pickTextColor = Color(0xff000000);
+                _clearText();
+                _clearDrawing();
+                gNotingDatabase.deleteNote(
+                    gNotesSnapshot.firstWhere((element) => element.id == key));
+              } else {
+                gNotingDatabase.deleteNote(
+                    gNotesSnapshot.firstWhere((element) => element.id == key));
+              }
+              Future.delayed(Duration(milliseconds: 50))
+                  .then((value) => sortSnapshot());
 
               Navigator.pop(context);
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void showPayDialog(BuildContext context) async {
-  print('showPayDialog');
-  String result = await showDialog(
-    context: context,
-    barrierDismissible: false, // user must tap button!
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('(Pay Test)'),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('No'),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          FlatButton(
-            child: Text('Yes'),
-            onPressed: () {
-              context.read<AppData>().isAdmobRemoved = true;
-              Navigator.pop(context);
-
-              // showErrorSnackBar(context);
             },
           ),
         ],
@@ -303,35 +424,38 @@ _clearDrawing() {
 }
 
 Widget _listItem(BuildContext context, int index, Animation<double> animation) {
+  final maxTitleLength = 10;
+  final maxContentLength = 100;
+  int id = gNotesSnapshot.elementAt(index).id;
   String text =
       animation.isCompleted ? gNotesSnapshot.elementAt(index).text : '';
   String dateStr =
       animation.isCompleted ? gNotesSnapshot.elementAt(index).createTime : '';
+  if (dateStr.indexOf('(') != -1) {
+    dateStr = dateStr.substring(0, dateStr.indexOf('('));
+  }
+
   double iconButtonSize = 17;
   String textTitle = '';
   if (text.indexOf('\n') > 0) {
     textTitle = text.substring(0, text.indexOf('\n'));
   } else {
-    if (textTitle.length > 10) {
-      textTitle = textTitle.substring(0, 10);
+    if (textTitle.length > maxTitleLength) {
+      textTitle = text.substring(0, maxTitleLength);
     } else {
       textTitle = text;
     }
   }
   String textContent = text.replaceAll('\n', ' ');
 
-  if (textTitle.length > 10) {
-    textTitle = textTitle.substring(0, 10);
+  if (textTitle.length > maxTitleLength) {
+    textTitle = textTitle.substring(0, maxTitleLength);
   }
-  if (textContent.length > 100) {
-    textContent = textContent.substring(0, 100) + '...';
+  if (textContent.length > maxContentLength) {
+    textContent = textContent.substring(0, maxContentLength) + '...';
   }
 
   return SizeTransition(
-    // position: Tween<Offset>(
-    //   begin: const Offset(-1, 0),
-    //   end: Offset(0, 0),
-    // ).animate(animation),
     axis: Axis.vertical,
     sizeFactor: animation,
     child: Padding(
@@ -340,33 +464,69 @@ Widget _listItem(BuildContext context, int index, Animation<double> animation) {
         elevation: 0.5,
         child: ListTile(
           onTap: () {
-            gCurrentNote = gNotesSnapshot.elementAt(index);
-            gTextEditingController.text = gCurrentNote.text;
-            gPainterController.clear();
+            gNotingDatabase.loadNotes().then((value) {
+              gCurrentNote =
+                  gNotesSnapshot.firstWhere((element) => element.id == id);
+              // gCurrentNote = gNotesSnapshot.elementAt(index);
+              gTextEditingController.text = gCurrentNote.text;
+              context.read<AppData>().textSize = gCurrentNote.textSize;
+              context.read<AppData>().pickTextColor =
+                  Color(gCurrentNote.textColorCode);
+              gPainterController.clear();
+              gDrawRecorder.fromString(gCurrentNote.draw);
+              gDrawRecorder.drawFromData();
+              gPainterController.eraseMode =
+                  context.read<AppData>().isEraserMode;
 
-            print('current note text: ${gCurrentNote.text}');
-            print('current note textSize: ${gCurrentNote.textSize}');
-            print(
-                'current note textColor: ${gCurrentNote.textColorCode.toRadixString(16)}');
-            print('current note text: ${gCurrentNote.draw}');
-
-            Navigator.pop(context);
-            context.read<AppData>().isHistoryScreen = false;
+              context.read<AppData>().isHistoryScreen = false;
+              Navigator.pop(context);
+            });
           },
           title: Row(
             children: [
-              Text(textTitle),
-              Spacer(),
+              Expanded(
+                  child: Text(
+                textTitle,
+                softWrap: false,
+              )),
+              // Spacer(),
+              SizedBox(
+                width: 5,
+              ),
               Text(dateStr),
-              // SizedBox(
-              //   width: iconButtonSize + 20,
-              //   child: IconButton(
-              //     padding: EdgeInsets.all(1),
-              //     iconSize: iconButtonSize,
-              //     icon: ImageIcon(AssetImage('assets/share_icon.png')),
-              //     onPressed: () {},
-              //   ),
-              // ),
+              SizedBox(
+                width: iconButtonSize + 20,
+                child: IconButton(
+                  padding: EdgeInsets.all(1),
+                  iconSize: iconButtonSize,
+                  icon: ImageIcon(AssetImage('assets/share_icon.png')),
+                  onPressed: () {
+                    gNotingDatabase.loadNotes().then((value) {
+                      gCurrentNote = gNotesSnapshot
+                          .firstWhere((element) => element.id == id);
+                      gTextEditingController.text = gCurrentNote.text;
+                      context.read<AppData>().textSize = gCurrentNote.textSize;
+                      context.read<AppData>().pickTextColor =
+                          Color(gCurrentNote.textColorCode);
+                      gPainterController.clear();
+                      gDrawRecorder.fromString(gCurrentNote.draw);
+                      gDrawRecorder.drawFromData();
+                      gPainterController.eraseMode =
+                          context.read<AppData>().isEraserMode;
+
+                      context.read<AppData>().isHistoryScreen = false;
+                      Future.delayed(Duration(milliseconds: 100)).then((value) {
+                        capturePng(gFirstScreenScaffoldKey.currentContext);
+                        //     capturepng
+                        // gFirstScreenScaffoldKey.currentContext
+                      });
+                      Future.delayed(Duration(seconds: 1)).then((value) =>
+                          homeWidgetProvider.sendAndUpdate(gCurrentNote.text));
+                      Navigator.pop(context);
+                    });
+                  },
+                ),
+              ),
               SizedBox(
                 width: iconButtonSize + 20,
                 child: IconButton(
@@ -374,12 +534,7 @@ Widget _listItem(BuildContext context, int index, Animation<double> animation) {
                   iconSize: iconButtonSize,
                   icon: ImageIcon(AssetImage('assets/delete.png')),
                   onPressed: () {
-                    if (gNotesSnapshot.elementAt(index).id == gCurrentNote.id) {
-                      // showErrorSnackBar(context,
-                      showAlert(context, 'The note is currently being edited.');
-                    } else {
-                      showDeleteDialog(context, index);
-                    }
+                    showDeleteDialog(context, index);
                   },
                 ),
               ),

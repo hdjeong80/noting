@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.2+3
+version: 1.1.6+18
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -34,7 +34,7 @@ dependencies:
   provider: ^4.3.2+3
   flutter_colorpicker: ^0.3.4
   simple_color_picker: ^1.0.0
-  flutter_circle_color_picker: ^0.2.0
+#  flutter_circle_color_picker: ^0.2.0
   image_picker: ^0.6.7+17
   flutter_fgbg: ^0.0.1
   intl: ^0.16.1
@@ -48,6 +48,13 @@ dependencies:
   get_it: ^4.0.2
   share: ^0.6.5+4
   shared_preferences: ^0.5.12+4
+  in_app_purchase: ^0.3.5+1
+  google_fonts: ^1.1.1
+  home_widget: ^0.0.2
+  workmanager:
+    git:
+      url: https://github.com/fluttercommunity/flutter_workmanager
+      ref: 1c4e162ea4e71855856fb9e55a1545b3dae9a25d
 
 
 dev_dependencies:

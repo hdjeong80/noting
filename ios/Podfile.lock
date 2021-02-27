@@ -35,9 +35,13 @@ PODS:
   - "GoogleUtilities/NSData+zlib (7.1.1)"
   - GoogleUtilities/Reachability (7.1.1):
     - GoogleUtilities/Logger
+  - home_widget (0.0.1):
+    - Flutter
   - image_gallery_saver (1.5.0):
     - Flutter
   - image_picker (0.0.1):
+    - Flutter
+  - in_app_purchase (0.0.1):
     - Flutter
   - nanopb (2.30906.0):
     - nanopb/decode (= 2.30906.0)
@@ -49,22 +53,30 @@ PODS:
   - PromisesObjC (1.2.12)
   - share (0.0.1):
     - Flutter
+  - shared_preferences (0.0.1):
+    - Flutter
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
   - url_launcher (0.0.1):
+    - Flutter
+  - workmanager (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - admob_flutter (from `.symlinks/plugins/admob_flutter/ios`)
   - Flutter (from `Flutter`)
   - flutter_fgbg (from `.symlinks/plugins/flutter_fgbg/ios`)
+  - home_widget (from `.symlinks/plugins/home_widget/ios`)
   - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
+  - in_app_purchase (from `.symlinks/plugins/in_app_purchase/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - share (from `.symlinks/plugins/share/ios`)
+  - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
+  - workmanager (from `.symlinks/plugins/workmanager/ios`)
 
 SPEC REPOS:
   trunk:
@@ -83,18 +95,26 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_fgbg:
     :path: ".symlinks/plugins/flutter_fgbg/ios"
+  home_widget:
+    :path: ".symlinks/plugins/home_widget/ios"
   image_gallery_saver:
     :path: ".symlinks/plugins/image_gallery_saver/ios"
   image_picker:
     :path: ".symlinks/plugins/image_picker/ios"
+  in_app_purchase:
+    :path: ".symlinks/plugins/in_app_purchase/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
   share:
     :path: ".symlinks/plugins/share/ios"
+  shared_preferences:
+    :path: ".symlinks/plugins/shared_preferences/ios"
   sqflite:
     :path: ".symlinks/plugins/sqflite/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
+  workmanager:
+    :path: ".symlinks/plugins/workmanager/ios"
 
 SPEC CHECKSUMS:
   admob_flutter: 370023e0bc3f49a44ba94f14009e0728bffe43e8
@@ -105,14 +125,18 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: 8d3c0aeede16ab7764144b5a4ca8e1d4323841b7
   GoogleUserMessagingPlatform: b168e8c46cd8f92aa3e34b584c4ca78a411ce367
   GoogleUtilities: 3dc4ff0d5e4840e2fa8eef0889620e8c33d4218c
+  home_widget: 2829415127ee92e876f816cbbe44c0b6601b8a37
   image_gallery_saver: 259eab68fb271cfd57d599904f7acdc7832e7ef2
   image_picker: 9c3312491f862b28d21ecd8fdf0ee14e601b3f09
+  in_app_purchase: 3e2155afa9d03d4fa32d9e62d567885080ce97d6
   nanopb: 1bf24dd71191072e120b83dd02d08f3da0d65e53
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
   share: 0b2c3e82132f5888bccca3351c504d0003b3b410
+  shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
+  workmanager: 0afdcf5628bbde6924c21af7836fed07b42e30e6
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 

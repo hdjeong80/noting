@@ -38,20 +38,25 @@ class NotingDatabase {
     // }
   }
 
-  loadNotes() async {
-    final notes = await repo.getAllNotes();
-    if (notes == null) {
-      print('loadNotes Fail');
-    }
-    gNotesSnapshot = notes;
-    // setState(() => gNotesSnapshot = notes);
+  Future<bool> loadNotes() async {
+    await repo.getAllNotes().then((value) {
+      if (value == null) {
+        print('loadNotes Fail');
+        return false;
+      } else {
+        gNotesSnapshot = value;
+
+        return true;
+      }
+    });
   }
 
   addNewNote() async {
     print('add note');
     await repo.insertNote(NoteModel(
-      createTime: DateFormat('yyyy.MM.dd').format(DateTime.now()),
-      recentUpdateTime: DateFormat('yyyy.MM.dd').format(DateTime.now()),
+      createTime: DateFormat('yyyy.MM.dd(hh.mm.ss)').format(DateTime.now()),
+      recentUpdateTime:
+          DateFormat('yyyy.MM.dd(hh.mm.ss)').format(DateTime.now()),
       text: '',
       textSize: ConfigConst.textSizeMin,
       textColorCode: 0xff000000,

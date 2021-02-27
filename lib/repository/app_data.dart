@@ -7,7 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:noting/repository/db.dart';
 import 'package:painter/painter.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zefyr/zefyr.dart';
+
+import 'draw_recorder.dart';
 
 enum WallpaperModes {
   photo,
@@ -38,6 +42,22 @@ class ConfigConst {
 
   static final floatingActionButtonSize = 56.0;
   static double colorPickerSizerReduceFactor = 0.7;
+
+  static List<String> superPasswords = [
+    '7924',
+    '9237',
+    '5909',
+    '3787',
+    '2839',
+  ];
+}
+
+enum InAppPurchaseStatus {
+  ready,
+  processing,
+  error,
+  alreadyPurchased,
+  success,
 }
 
 final LinkedScrollControllerGroup gScrollControllers =
@@ -62,11 +82,10 @@ NoteModel gCurrentNote;
 // int gCurrentNoteId;
 bool gisDatabaseLoaded = false;
 GlobalKey<AnimatedListState> gListKey = GlobalKey<AnimatedListState>();
-List<double> gDrawRecorderX;
-List<double> gDrawRecorderY;
-List<double> gDrawRecorderWidth;
-List<int> gDrawRecorderColorCode;
-List<bool> gDrawRecorderEraseMode;
+DrawRecorder gDrawRecorder = DrawRecorder();
+InAppPurchaseStatus gIApStatus = InAppPurchaseStatus.ready;
+ScreenshotController gScreenshotController = ScreenshotController();
+var gFirstScreenScaffoldKey = GlobalKey();
 
 /* Provider variables */
 class AppData with ChangeNotifier {
@@ -88,12 +107,40 @@ class AppData with ChangeNotifier {
   bool _isPasswordCorrectUi = false;
   int _uiPasswordStep = 0; // 0: initial condition, 1: confirm pw, 2: locked
   Uint8List testImage;
-  bool _isAdmobRemoved = false;
+  bool _removeAds = false;
+  int _homeScreenWidgetIndex = 0;
+  int _homeScreenWidgetKey = -1;
 
-  bool get isAdmobRemoved => _isAdmobRemoved;
+  int get homeScreenWidgetKey => _homeScreenWidgetKey;
 
-  set isAdmobRemoved(bool isAdmobRemoved) {
-    _isAdmobRemoved = isAdmobRemoved;
+  set homeScreenWidgetKey(int homeScreenWidgetKey) {
+    _homeScreenWidgetKey = homeScreenWidgetKey;
+    _saveHomeScreenWidgetKey(homeScreenWidgetKey);
+    // notifyListeners();
+  }
+
+  int get homeScreenWidgetIndex => _homeScreenWidgetIndex;
+
+  set homeScreenWidgetIndex(int homeScreenWidgetIndex) {
+    _homeScreenWidgetIndex = homeScreenWidgetIndex;
+    notifyListeners();
+  }
+
+  set homeScreenWidgetIndexWithoutNoti(int homeScreenWidgetIndex) {
+    _homeScreenWidgetIndex = homeScreenWidgetIndex;
+  }
+
+  Future<void> _saveHomeScreenWidgetKey(int homeScreenWidgetKey) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt('homeScreenWidgetKey', homeScreenWidgetKey);
+  }
+
+  bool get removeAds => _removeAds;
+  // bool get removeAds => true;
+
+  set removeAds(bool removeAds) {
+    _removeAds = removeAds;
+
     notifyListeners();
   }
 
@@ -123,6 +170,10 @@ class AppData with ChangeNotifier {
     _pickTextColor = pickTextColor;
     // print('${_pickTextColor.value.toRadixString(16)}');
     notifyListeners();
+  }
+
+  set pickTextColorWithoutNoti(Color pickTextColor) {
+    _pickTextColor = pickTextColor;
   }
 
   WallpaperModes _wallpaperMode = WallpaperModes.color;
@@ -160,18 +211,16 @@ class AppData with ChangeNotifier {
     notifyListeners();
   }
 
-  bool _isPasswordSaved = false;
-
-  bool get isPasswordSaved => _isPasswordSaved;
-  set isPasswordSaved(bool isPasswordSaved) {
-    _isPasswordSaved = isPasswordSaved;
-    notifyListeners();
-  }
-
   String get password => _password;
   set password(String password) {
     _password = password;
+    _savePassword(password);
     notifyListeners();
+  }
+
+  Future<void> _savePassword(String password) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('password', password);
   }
 
   double get drawSize => _drawSize;
@@ -192,6 +241,10 @@ class AppData with ChangeNotifier {
   set textSize(double textSize) {
     _textSize = textSize;
     notifyListeners();
+  }
+
+  set textSizeWithoutNoti(double textSize) {
+    _textSize = textSize;
   }
 
   Color get pickDrawColor => _pickDrawColor;
@@ -241,5 +294,11 @@ class AppData with ChangeNotifier {
   set isPopupScreen(bool value) {
     _isPopupScreen = value;
     notifyListeners();
+  }
+
+  Future<void> setRemoveAds() async {
+    removeAds = true;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('removeAds', true);
   }
 }

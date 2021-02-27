@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
+// import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
+import 'package:noting/custom_packages/flutter_circle_color_picker.dart';
 import 'package:noting/repository/app_data.dart';
 import 'package:provider/provider.dart';
 
@@ -54,10 +55,15 @@ class TextColorPickerDialog extends StatelessWidget {
             AssetImage('assets/text.png'),
             color: Colors.blue,
           ),
-          CircleColorPicker(
-            initialColor: context.watch<AppData>().pickTextColor,
-            onChanged: (value) => context.read<AppData>().pickTextColor = value,
-            colorCodeBuilder: (context, color) => Container(),
+          Align(
+            alignment: Alignment.center,
+            heightFactor: 1,
+            child: CircleColorPicker(
+              initialColor: context.watch<AppData>().pickTextColor,
+              onChanged: (value) =>
+                  context.read<AppData>().pickTextColor = value,
+              colorCodeBuilder: (context, color) => Container(),
+            ),
           ),
         ],
       ),

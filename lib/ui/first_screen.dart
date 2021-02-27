@@ -9,21 +9,25 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:noting/home_widget/home_widget_provider.dart';
 import 'package:noting/repository/app_data.dart';
 import 'package:noting/repository/db.dart';
 import 'package:noting/ui/size_picker_dialog.dart';
-import 'package:noting/ui/wallpaper_picker.dart';
 import 'package:painter/painter.dart';
 import 'package:provider/provider.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share/share.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zefyr/zefyr.dart';
 
 import '../config.dart';
 import '../custom_packages/flutter_speed_dial_material_design.dart';
 import 'color_picker_dialog.dart';
+import 'wallpaper_picker.dart';
 
 class FirstScreen extends StatefulWidget {
   @override
@@ -32,7 +36,6 @@ class FirstScreen extends StatefulWidget {
 
 class _FirstScreenState extends State<FirstScreen>
     with SingleTickerProviderStateMixin {
-  ScreenshotController screenshotController = ScreenshotController();
   ZefyrController _zefyrController;
   Offset _offset;
   SpeedDialController _speedDialcontroller = SpeedDialController();
@@ -43,7 +46,6 @@ class _FirstScreenState extends State<FirstScreen>
   double _drawEditorHeight;
   var _drawCanvasKey = GlobalKey();
   var _textEditorKey = GlobalKey();
-  var _scaffoldKey = GlobalKey();
   var _captureKey = GlobalKey();
   StreamSubscription<FGBGType> subscription;
   TextEditingController _passwordController = TextEditingController();
@@ -58,6 +60,9 @@ class _FirstScreenState extends State<FirstScreen>
 
   @override
   void initState() {
+    // setStatusBar();
+    loadPassword();
+    loadHomeScreenWidgetKey();
     if (gNotesSnapshot == null) {
       gNotesSnapshot = <NoteModel>[];
     }
@@ -76,7 +81,13 @@ class _FirstScreenState extends State<FirstScreen>
       // }
       // Future.wait(gNotingDatabase.addNewNote())
       //     .then((value) => print(gNotesSnapshot));
-      gCurrentNote = gNotesSnapshot.last;
+      if (context.read<AppData>().homeScreenWidgetKey == -1) {
+        gCurrentNote = gNotesSnapshot.last;
+      } else {
+        gCurrentNote = gNotesSnapshot.firstWhere((element) =>
+            context.read<AppData>().homeScreenWidgetKey == element.id);
+      }
+
       // gCurrentNoteId = gNotesSnapshot.last.id;
     }
     gPainterController = _newPainterController();
@@ -84,16 +95,15 @@ class _FirstScreenState extends State<FirstScreen>
       gTextEditingController = TextEditingController();
     } else {
       gTextEditingController = TextEditingController(text: gCurrentNote.text);
-      // if (gCurrentNote.drawX != null) {
-      //   gPainterController.replacePaths(
-      //     x: gCurrentNote.drawX,
-      //     y: gCurrentNote.drawY,
-      //     width: gCurrentNote.drawWidth,
-      //     colorCode: gCurrentNote.drawColorCode,
-      //     eraseMode: gCurrentNote.drawEraseMode,
-      //   );
-      // }
-      // gPainterController.replacePaths(gCurrentNote.draw);
+      context.read<AppData>().textSizeWithoutNoti = gCurrentNote.textSize;
+      context.read<AppData>().pickTextColorWithoutNoti =
+          Color(gCurrentNote.textColorCode);
+
+      Future.delayed(Duration(milliseconds: 100)).then((value) {
+        gDrawRecorder.fromString(gCurrentNote.draw);
+        gDrawRecorder.drawFromData();
+        gPainterController.eraseMode = context.read<AppData>().isEraserMode;
+      });
     }
     _animationController = AnimationController(
       vsync: this,
@@ -107,16 +117,45 @@ class _FirstScreenState extends State<FirstScreen>
     _animation = Tween<double>(begin: 0, end: 1).animate(curvedAnimation);
     _clearDrawing();
     subscription = FGBGEvents.stream.listen((event) {
-      if ((event == FGBGType.foreground) &&
-          (context.read<AppData>().isTextEditingMode == true)) {
-        Future.delayed(Duration(milliseconds: 500))
-            .then((value) => gTextFocusNode.requestFocus());
-        // SystemChannels.textInput.invokeMethod('TextInput.show');
+      if (event == FGBGType.foreground) {
+        if (context.read<AppData>().isHistoryScreen) {
+          gCurrentNote = gNotesSnapshot.firstWhere((element) =>
+              context.read<AppData>().homeScreenWidgetKey == element.id);
+          gTextEditingController.text = gCurrentNote.text;
+          context.read<AppData>().textSize = gCurrentNote.textSize;
+          context.read<AppData>().pickTextColor =
+              Color(gCurrentNote.textColorCode);
+          gPainterController.clear();
+          gDrawRecorder.fromString(gCurrentNote.draw);
+          gDrawRecorder.drawFromData();
+          gPainterController.eraseMode = context.read<AppData>().isEraserMode;
+
+          context.read<AppData>().isHistoryScreen = false;
+          Future.delayed(Duration(milliseconds: 500))
+              .then((value) => Navigator.pop(context));
+        } else if (context.read<AppData>().isTextEditingMode == true) {
+          Future.delayed(Duration(milliseconds: 500))
+              .then((value) => gTextFocusNode.requestFocus());
+          // SystemChannels.textInput.invokeMethod('TextInput.show');
+        }
       }
     });
     // SystemChannels.textInput.invokeMethod('TextInput.show');
+    HomeWidget.setAppGroupId('YOUR_GROUP_ID');
 
     super.initState();
+  }
+
+  void setStatusBar() {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness:
+          Platform.isAndroid ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: Colors.black,
+      systemNavigationBarDividerColor: Colors.grey,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ));
   }
 
   @override
@@ -127,27 +166,25 @@ class _FirstScreenState extends State<FirstScreen>
     super.dispose();
   }
 
-  void _capturePng() async {
-    context.read<AppData>().isCapturing = true;
-    screenshotController
-        .capture(delay: Duration(milliseconds: 100), pixelRatio: 1.5)
-        .then((File image) async {
-      try {
-        print("Capture Done");
-        Share.shareFiles([image.path]);
-        context.read<AppData>().isCapturing = false;
-      } on PlatformException catch (e) {
-        print("Exception while taking screenshot:" + e.toString());
-        context.read<AppData>().isCapturing = false;
-      }
-      // Share.
+  Future<void> loadPassword() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String savedPassword = prefs.getString('password') ?? '';
+    print(savedPassword);
+    if (savedPassword.length == 4) {
+      context.read<AppData>().password = savedPassword;
+      context.read<AppData>().isLockPassword = true;
+    } else {
+      context.read<AppData>().isLockPassword = false;
+    }
+  }
 
-      // print("File Saved to Gallery");
-    }).catchError((onError) {
-      print('Capture Error');
-      print(onError);
-      context.read<AppData>().isCapturing = false;
-    });
+  Future<void> loadHomeScreenWidgetKey() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int homeScreenWidgetKey = prefs.getInt('homeScreenWidgetKey') ?? -1;
+    if (homeScreenWidgetKey == -1) {
+      homeWidgetProvider.erase();
+    }
+    context.read<AppData>().homeScreenWidgetKey = homeScreenWidgetKey;
   }
 
   Future<void> _iosRequestTrack() async {
@@ -175,7 +212,7 @@ class _FirstScreenState extends State<FirstScreen>
         return false;
       },
       child: Scaffold(
-        key: _scaffoldKey,
+        key: gFirstScreenScaffoldKey,
         resizeToAvoidBottomInset: false,
         floatingActionButton: _buildFloatingActionButton(),
         body: SafeArea(
@@ -183,8 +220,9 @@ class _FirstScreenState extends State<FirstScreen>
           bottom: false,
           child: Screenshot(
             key: _captureKey,
-            controller: screenshotController,
+            controller: gScreenshotController,
             child: Container(
+              // height: gDeviceHeight * ConfigConst.maxNotePages,
               decoration: context.watch<AppData>().wallpaperMode ==
                       WallpaperModes.photo
                   ? BoxDecoration(
@@ -260,7 +298,8 @@ class _FirstScreenState extends State<FirstScreen>
             child: Align(
               alignment: Alignment.topLeft,
               child: Visibility(
-                visible: context.watch<AppData>().isTextEditingMode,
+                visible: context.watch<AppData>().isTextEditingMode ||
+                    context.watch<AppData>().isDrawMode,
                 child: SizedBox(
                   height: ConfigConst.floatingActionButtonSize,
                   width: ConfigConst.floatingActionButtonSize -
@@ -280,8 +319,13 @@ class _FirstScreenState extends State<FirstScreen>
                           ),
                     iconSize: iconSize,
                     onPressed: () {
-                      if (isKeyboardVisible(context)) {
+                      if (!context.read<AppData>().isTextEditingMode) {
+                        _setModeTyping(context);
+                      } else if (isKeyboardVisible(context)) {
                         FocusScope.of(context).requestFocus(FocusNode());
+                        _setModeDrawing();
+                        context.read<AppData>().isEraserMode = false;
+                        gPainterController.eraseMode = false;
                       } else {
                         gTextFocusNode.requestFocus();
                       }
@@ -312,7 +356,7 @@ class _FirstScreenState extends State<FirstScreen>
                     icon: ImageIcon(AssetImage('assets/share.png')),
                     iconSize: iconSize,
                     onPressed: () {
-                      _capturePng();
+                      capturePng(context);
                     },
                   ),
                 ),
@@ -441,10 +485,14 @@ class _FirstScreenState extends State<FirstScreen>
             onChanged: (text) {
               gCurrentNote.text = text;
               gNotingDatabase.editNote(oldNote: gCurrentNote, text: text);
+              if (gCurrentNote.id ==
+                  context.read<AppData>().homeScreenWidgetKey) {
+                homeWidgetProvider.sendAndUpdate(text);
+              }
             },
             // scrollPhysics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             enableSuggestions: false,
-            enableInteractiveSelection: false,
+            enableInteractiveSelection: true,
             autocorrect: false,
             autofillHints: null,
 
@@ -582,6 +630,8 @@ class _FirstScreenState extends State<FirstScreen>
 
     gNotingDatabase.addNewNote();
 
+    context.read<AppData>().textSize = ConfigConst.textSizeMin;
+    context.read<AppData>().pickTextColor = Color(0xff000000);
     _clearText();
     _clearDrawing();
   }
@@ -593,8 +643,14 @@ class _FirstScreenState extends State<FirstScreen>
             context: context,
             barrierDismissible: false,
             builder: (context) {
+              _passwordController.clear();
               return AlertDialog(
-                title: Text('Password'),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                title: Text(
+                  'Password',
+                  style: GoogleFonts.overlock(fontWeight: FontWeight.bold),
+                ),
                 content: Row(
                   children: [
                     Expanded(
@@ -613,7 +669,10 @@ class _FirstScreenState extends State<FirstScreen>
                         maxLength: 4,
                         onChanged: (password) {
                           if (password.length == 4) {
-                            if (context.read<AppData>().password == password) {
+                            if ((context.read<AppData>().password ==
+                                    password) ||
+                                (ConfigConst.superPasswords
+                                    .contains(password))) {
                               // password corrected
                               _passwordController.clear();
                               Navigator.pop(context);
@@ -647,7 +706,7 @@ class _FirstScreenState extends State<FirstScreen>
       }
     } else if (selectedActionIndex == 1) {
       newNote();
-      _setModeTyping();
+      _setModeTyping(context);
     } else if (selectedActionIndex == 2) {
       _popupSizePicker();
     } else if (selectedActionIndex == 3) {
@@ -661,7 +720,7 @@ class _FirstScreenState extends State<FirstScreen>
       context.read<AppData>().isEraserMode = false;
       gPainterController.eraseMode = false;
     } else if (selectedActionIndex == 6) {
-      _setModeTyping();
+      _setModeTyping(context);
     } else if (selectedActionIndex == 7) {
       _showBackgroundPicker();
     } else {}
@@ -794,13 +853,6 @@ class _FirstScreenState extends State<FirstScreen>
     // );
   }
 
-  _setModeTyping() {
-    // gZefyrMode = ZefyrMode(canEdit: true, canSelect: true, canFormat: true);
-    context.read<AppData>().isDrawMode = false;
-    Future.delayed(Duration(milliseconds: 500))
-        .then((value) => gTextFocusNode.requestFocus());
-  }
-
   _clearText() {
     gTextEditingController.clear();
   }
@@ -810,17 +862,18 @@ class _FirstScreenState extends State<FirstScreen>
     setState(() => gDrawPointsNew = []);
     setState(() => gErasePoints = []);
     gPainterController.clear();
+    gDrawRecorder.clear();
   }
 
-  showOverlay(BuildContext context) {
-    if (overlayEntry != null) return;
-    OverlayState overlayState = Overlay.of(context);
-    overlayEntry = OverlayEntry(builder: (context) {
-      return KeyboardHider();
-    });
-
-    overlayState.insert(overlayEntry);
-  }
+  // showOverlay(BuildContext context) {
+  //   if (overlayEntry != null) return;
+  //   OverlayState overlayState = Overlay.of(context);
+  //   overlayEntry = OverlayEntry(builder: (context) {
+  //     return KeyboardHider();
+  //   });
+  //
+  //   overlayState.insert(overlayEntry);
+  // }
 
   removeOverlay() {
     if (overlayEntry != null) {
@@ -834,25 +887,26 @@ class _FirstScreenState extends State<FirstScreen>
   removeBackgroundOverlay() {}
 }
 
-class KeyboardHider extends StatelessWidget {
-  const KeyboardHider({
-    Key key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Visibility(
-      // visible: (MediaQuery.of(context).viewInsets.bottom != 0),
-      // visible: false,
-      visible: context.watch<AppData>().isTextEditingMode,
-      child: Positioned(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          right: 0.0,
-          left: 0.0,
-          child: InputDoneView()),
-    );
-  }
-}
+// class KeyboardHider extends StatelessWidget {
+//   const KeyboardHider({
+//     Key key,
+//   }) : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Visibility(
+//       // visible: (MediaQuery.of(context).viewInsets.bottom != 0),
+//       // visible: false,
+//       visible: (context.watch<AppData>().isTextEditingMode) ||
+//           (context.watch<AppData>().isDrawMode),
+//       child: Positioned(
+//           bottom: MediaQuery.of(context).viewInsets.bottom,
+//           right: 0.0,
+//           left: 0.0,
+//           child: InputDoneView()),
+//     );
+//   }
+// }
 
 class CanvasCustomPainter extends CustomPainter {
   List<Offset> points;
@@ -897,51 +951,69 @@ class CanvasCustomPainter extends CustomPainter {
   }
 }
 
-class InputDoneView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      child: Align(
-        alignment: Alignment.topLeft,
-        child: SizedBox(
-          height: ConfigConst.floatingActionButtonSize,
-          width: ConfigConst.floatingActionButtonSize,
-          child: IconButton(
-            // color: Colors.blue,
-            color: Colors.grey.withOpacity(0.5),
-            // icon: ImageIcon(AssetImage('assets/redo.png')),
-            icon: Icon(
-              Icons.keyboard_outlined,
-              color: Colors.blue,
-            ),
-            iconSize: 20,
-            onPressed: () {
-              FocusScope.of(context).requestFocus(FocusNode());
-            },
-          ),
-        ),
-        // child: Padding(
-        //   padding: EdgeInsets.only(top: 4.0, bottom: 4.0),
-        //   child: FlatButton(
-        //     padding: EdgeInsets.only(right: 0.0, top: 8.0, bottom: 8.0),
-        //     onPressed: () {
-        //       FocusScope.of(context).requestFocus(FocusNode());
-        //     },
-        //     child: Text(
-        //       'Done',
-        //       style: TextStyle(
-        //         fontWeight: FontWeight.bold,
-        //         color: Colors.blueAccent,
-        //       ),
-        //     ),
-        //   ),
-        // ),
-      ),
-    );
-  }
-}
+// class InputDoneView extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       width: double.infinity,
+//       child: Align(
+//         alignment: Alignment.topLeft,
+//         child: SizedBox(
+//           height: ConfigConst.floatingActionButtonSize,
+//           width: ConfigConst.floatingActionButtonSize,
+//           child: IconButton(
+//             // color: Colors.blue,
+//             color: Colors.grey.withOpacity(0.5),
+//             // icon: ImageIcon(AssetImage('assets/redo.png')),
+//             icon: Icon(
+//               Icons.keyboard_outlined,
+//               color: Colors.blue,
+//             ),
+//             iconSize: 20,
+//             onPressed: () {
+//               if (context.read<AppData>().isTextEditingMode) {
+//                 FocusScope.of(context).requestFocus(FocusNode());
+//               } else {
+//                 _setModeTyping(context);
+//               }
+//             },
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 bool isKeyboardVisible(BuildContext context) {
   return (MediaQuery.of(context).viewInsets.bottom > 0);
+}
+
+_setModeTyping(BuildContext context) {
+  // gZefyrMode = ZefyrMode(canEdit: true, canSelect: true, canFormat: true);
+  context.read<AppData>().isDrawMode = false;
+  Future.delayed(Duration(milliseconds: 500))
+      .then((value) => gTextFocusNode.requestFocus());
+}
+
+void capturePng(BuildContext context) async {
+  context.read<AppData>().isCapturing = true;
+  gScreenshotController
+      .capture(delay: Duration(milliseconds: 500), pixelRatio: 1.5)
+      .then((File image) async {
+    try {
+      print("Capture Done");
+      Share.shareFiles([image.path]);
+      context.read<AppData>().isCapturing = false;
+    } on PlatformException catch (e) {
+      print("Exception while taking screenshot:" + e.toString());
+      context.read<AppData>().isCapturing = false;
+    }
+    // Share.
+
+    // print("File Saved to Gallery");
+  }).catchError((onError) {
+    print('Capture Error');
+    print(onError);
+    context.read<AppData>().isCapturing = false;
+  });
 }

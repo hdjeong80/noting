@@ -30,6 +30,9 @@ class WallpaperPicker extends StatelessWidget {
             onTap: () {
               context.read<AppData>().isWallpaperPickerScreen = false;
               context.read<AppData>().isPopupScreen = false;
+              if (context.read<AppData>().isTextEditingMode) {
+                gTextFocusNode.requestFocus();
+              }
             },
           ),
         ),

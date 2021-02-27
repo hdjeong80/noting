@@ -42,7 +42,7 @@ class DrawSizePickerDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                InkWell(
+                GestureDetector(
                   child: SizedBox(
                     height: inkwellDefaultSize,
                     child: Padding(
@@ -74,7 +74,7 @@ class DrawSizePickerDialog extends StatelessWidget {
                     }
                   },
                 ),
-                InkWell(
+                GestureDetector(
                   child: SizedBox(
                     height: inkwellDefaultSize,
                     child: Padding(
@@ -106,7 +106,7 @@ class DrawSizePickerDialog extends StatelessWidget {
                     }
                   },
                 ),
-                InkWell(
+                GestureDetector(
                   child: SizedBox(
                     height: inkwellDefaultSize,
                     child: Padding(
@@ -138,7 +138,7 @@ class DrawSizePickerDialog extends StatelessWidget {
                     }
                   },
                 ),
-                InkWell(
+                GestureDetector(
                   child: SizedBox(
                     height: inkwellDefaultSize,
                     child: Padding(
@@ -170,7 +170,7 @@ class DrawSizePickerDialog extends StatelessWidget {
                     }
                   },
                 ),
-                InkWell(
+                GestureDetector(
                   child: SizedBox(
                     height: inkwellDefaultSize,
                     child: Padding(
@@ -267,7 +267,7 @@ class TextSizePickerDialog extends StatelessWidget {
               //   color: Colors.blue,
               // ),
 
-              InkWell(
+              GestureDetector(
                 child: SizedBox(
                   width: inkwellDefaultSize,
                   child: Padding(
@@ -288,7 +288,7 @@ class TextSizePickerDialog extends StatelessWidget {
                   context.read<AppData>().textSize = ConfigConst.textSizeMin;
                 },
               ),
-              InkWell(
+              GestureDetector(
                 child: SizedBox(
                   width: inkwellDefaultSize,
                   child: Padding(
@@ -309,7 +309,7 @@ class TextSizePickerDialog extends StatelessWidget {
                   context.read<AppData>().textSize = ConfigConst.textSizeSmall;
                 },
               ),
-              InkWell(
+              GestureDetector(
                 child: SizedBox(
                   width: inkwellDefaultSize,
                   child: Padding(
@@ -330,7 +330,7 @@ class TextSizePickerDialog extends StatelessWidget {
                   context.read<AppData>().textSize = ConfigConst.textSizeNormal;
                 },
               ),
-              InkWell(
+              GestureDetector(
                 child: SizedBox(
                   width: inkwellDefaultSize,
                   child: Padding(
@@ -351,7 +351,7 @@ class TextSizePickerDialog extends StatelessWidget {
                   context.read<AppData>().textSize = ConfigConst.textSizeBig;
                 },
               ),
-              InkWell(
+              GestureDetector(
                 child: SizedBox(
                   width: inkwellDefaultSize,
                   child: Padding(

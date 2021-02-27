@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07BB2CFE25BD578100762A04 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07BB2CFD25BD578100762A04 /* StoreKit.framework */; };
+		07F0DBA225C97C700079A372 /* notingWidget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 07F0DB9D25C97C6E0079A372 /* notingWidget.intentdefinition */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		71320A59E272950A83F73CFA /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 848DAC38604266307D560E5A /* Pods_Runner.framework */; };
@@ -17,6 +19,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		07F0DBA625C97C700079A372 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -31,6 +43,13 @@
 
 /* Begin PBXFileReference section */
 		004497C51AAC0AB93C281032 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
+		07BB2CFD25BD578100762A04 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		07F0DB9625C97C6E0079A372 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		07F0DB9825C97C6E0079A372 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		07F0DB9B25C97C6E0079A372 /* notingWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = notingWidget.swift; sourceTree = "<group>"; };
+		07F0DB9D25C97C6E0079A372 /* notingWidget.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = notingWidget.intentdefinition; sourceTree = "<group>"; };
+		07F0DB9E25C97C700079A372 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		07F0DBA025C97C700079A372 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
@@ -55,12 +74,24 @@
 			buildActionMask = 2147483647;
 			files = (
 				71320A59E272950A83F73CFA /* Pods_Runner.framework in Frameworks */,
+				07BB2CFE25BD578100762A04 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		07F0DB9A25C97C6E0079A372 /* notingWidget */ = {
+			isa = PBXGroup;
+			children = (
+				07F0DB9B25C97C6E0079A372 /* notingWidget.swift */,
+				07F0DB9D25C97C6E0079A372 /* notingWidget.intentdefinition */,
+				07F0DB9E25C97C700079A372 /* Assets.xcassets */,
+				07F0DBA025C97C700079A372 /* Info.plist */,
+			);
+			path = notingWidget;
+			sourceTree = "<group>";
+		};
 		40F83DC7264821BBC608BA73 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -87,6 +118,7 @@
 			children = (
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
+				07F0DB9A25C97C6E0079A372 /* notingWidget */,
 				97C146EF1CF9000F007C117D /* Products */,
 				40F83DC7264821BBC608BA73 /* Pods */,
 				F55F1E9257D5D709919835B1 /* Frameworks */,
@@ -119,7 +151,10 @@
 		F55F1E9257D5D709919835B1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				07BB2CFD25BD578100762A04 /* StoreKit.framework */,
 				848DAC38604266307D560E5A /* Pods_Runner.framework */,
+				07F0DB9625C97C6E0079A372 /* WidgetKit.framework */,
+				07F0DB9825C97C6E0079A372 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -139,6 +174,7 @@
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				B433C7FC79E4376626397D04 /* [CP] Embed Pods Frameworks */,
+				07F0DBA625C97C700079A372 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
@@ -155,6 +191,7 @@
 		97C146E61CF9000F007C117D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1240;
 				LastUpgradeCheck = 1230;
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
@@ -273,6 +310,7 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				07F0DBA225C97C700079A372 /* notingWidget.intentdefinition in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,9 +391,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = 27K9M9HMLK;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -363,6 +402,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.flynnjeong.notingmemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -485,9 +525,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = 27K9M9HMLK;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -495,6 +536,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.flynnjeong.notingmemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -508,9 +550,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = 27K9M9HMLK;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -518,6 +561,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.flynnjeong.notingmemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
