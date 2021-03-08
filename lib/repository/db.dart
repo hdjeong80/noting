@@ -61,6 +61,8 @@ class NotingDatabase {
       textSize: ConfigConst.textSizeMin,
       textColorCode: 0xff000000,
       draw: '',
+      bgPath: '',
+      bgColor: 0xffffffff,
     ));
     loadNotes();
     // Future.wait([
@@ -85,6 +87,8 @@ class NotingDatabase {
     double textSize,
     int textColorCode,
     String draw,
+    String bgPath,
+    int bgColor,
   }) async {
     // map to datas
 
@@ -93,6 +97,8 @@ class NotingDatabase {
         textSize: textSize,
         textColorCode: textColorCode,
         draw: draw,
+        bgPath: bgPath,
+        bgColor: bgColor,
         recentUpdateTime: DateFormat('yyyy.MM.dd').format(DateTime.now())));
   }
 }
@@ -143,6 +149,8 @@ class NoteModel {
   double textSize;
   int textColorCode;
   String draw;
+  String bgPath;
+  int bgColor;
 
   NoteModel({
     this.id,
@@ -152,6 +160,8 @@ class NoteModel {
     this.textSize,
     this.textColorCode,
     this.draw,
+    this.bgPath,
+    this.bgColor,
   });
 
   Map<String, dynamic> toMap() {
@@ -163,6 +173,8 @@ class NoteModel {
       'textSize': this.textSize,
       'textColorCode': this.textColorCode,
       'draw': this.draw,
+      'bgPath': this.bgPath,
+      'bgColor': this.bgColor,
     };
   }
 
@@ -175,6 +187,8 @@ class NoteModel {
       textSize: map['textSize'],
       textColorCode: map['textColorCode'],
       draw: map['draw'],
+      bgPath: map['bgPath'],
+      bgColor: map['bgColor'],
     );
   }
 
@@ -186,6 +200,8 @@ class NoteModel {
     double textSize,
     int textColorCode,
     String draw,
+    String bgPath,
+    int bgColor,
   }) {
     return NoteModel(
       id: id ?? this.id,
@@ -195,6 +211,8 @@ class NoteModel {
       textSize: textSize ?? this.textSize,
       textColorCode: textColorCode ?? this.textColorCode,
       draw: draw ?? this.draw,
+      bgPath: bgPath ?? this.bgPath,
+      bgColor: bgColor ?? this.bgColor,
     );
   }
 }

@@ -98,6 +98,25 @@ class _FirstScreenState extends State<FirstScreen>
       context.read<AppData>().textSizeWithoutNoti = gCurrentNote.textSize;
       context.read<AppData>().pickTextColorWithoutNoti =
           Color(gCurrentNote.textColorCode);
+      if (gCurrentNote.bgPath != null) {
+        if (gCurrentNote.bgPath != '') {
+          context.read<AppData>().wallpaperImageFile =
+              File(gCurrentNote.bgPath);
+          context.read<AppData>().wallpaperMode = WallpaperModes.photo;
+        } else {
+          gCurrentNote.bgPath = '';
+          context.read<AppData>().wallpaperImageFile = null;
+          context.read<AppData>().wallpaperMode = WallpaperModes.color;
+          context.read<AppData>().pickWallpaperColor =
+              Color(gCurrentNote.bgColor ?? Colors.white.value);
+        }
+      } else {
+        gCurrentNote.bgPath = '';
+        context.read<AppData>().wallpaperImageFile = null;
+        context.read<AppData>().wallpaperMode = WallpaperModes.color;
+        context.read<AppData>().pickWallpaperColor =
+            Color(gCurrentNote.bgColor ?? Colors.white.value);
+      }
 
       Future.delayed(Duration(milliseconds: 100)).then((value) {
         gDrawRecorder.fromString(gCurrentNote.draw);
@@ -193,7 +212,6 @@ class _FirstScreenState extends State<FirstScreen>
 
   @override
   Widget build(BuildContext context) {
-    // _iosRequestTrack();
     gDeviceWidth = MediaQuery.of(context).size.width;
     gDeviceHeight = MediaQuery.of(context).size.height;
 
@@ -222,24 +240,25 @@ class _FirstScreenState extends State<FirstScreen>
             key: _captureKey,
             controller: gScreenshotController,
             child: Container(
-              // height: gDeviceHeight * ConfigConst.maxNotePages,
-              decoration: context.watch<AppData>().wallpaperMode ==
-                      WallpaperModes.photo
-                  ? BoxDecoration(
-                      image: DecorationImage(
-                        image: context.watch<AppData>().wallpaperImageFile ==
-                                null
-                            ? AssetImage('assets/empty.png')
-                            : FileImage(
-                                context.watch<AppData>().wallpaperImageFile),
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : BoxDecoration(
-                      color: context.watch<AppData>().pickWallpaperColor,
-                    ),
+              height: gDeviceHeight * ConfigConst.maxNotePages,
+              // decoration: context.watch<AppData>().wallpaperMode ==
+              //         WallpaperModes.photo
+              //     ? BoxDecoration(
+              //         image: DecorationImage(
+              //           image: context.watch<AppData>().wallpaperImageFile ==
+              //                   null
+              //               ? AssetImage('assets/empty.png')
+              //               : FileImage(
+              //                   context.watch<AppData>().wallpaperImageFile),
+              //           fit: BoxFit.cover,
+              //         ),
+              //       )
+              //     : BoxDecoration(
+              //         color: context.watch<AppData>().pickWallpaperColor,
+              //       ),
               child: Stack(
                 children: [
+                  backImageBuilder(context),
                   Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal: ConfigConst.scaffoldBodyPadding),
@@ -267,6 +286,29 @@ class _FirstScreenState extends State<FirstScreen>
     );
   }
 
+  Align backImageBuilder(BuildContext context) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: context.watch<AppData>().wallpaperMode == WallpaperModes.photo
+          ? Column(
+              children: [
+                SizedBox(
+                  height: 45,
+                ),
+                Image(
+                  image: context.watch<AppData>().wallpaperImageFile == null
+                      ? AssetImage('assets/empty.png')
+                      : FileImage(context.watch<AppData>().wallpaperImageFile),
+                  fit: BoxFit.contain,
+                ),
+              ],
+            )
+          : Container(
+              color: context.watch<AppData>().pickWallpaperColor,
+            ),
+    );
+  }
+
   Widget _auxButtons() {
     double leftPadding = 12;
     double rightPadding = 12;
@@ -287,6 +329,26 @@ class _FirstScreenState extends State<FirstScreen>
       child: Stack(
         children: [
           // Icon(Icons.accessibility_sharp),
+          Positioned(
+            left: 0,
+            // bottom: isKeyboardVisible(context)
+            //     ? MediaQuery.of(context).viewInsets.bottom
+            //     : MediaQuery.of(context).size.height -
+            //         fAB.dy -
+            //         fABHeight +
+            //         MediaQuery.of(context).viewInsets.bottom,
+            bottom: 0,
+            right: 0,
+            child: Container(
+              // height: ConfigConst.floatingActionButtonSize,
+              height: isKeyboardVisible(context)
+                  ? MediaQuery.of(context).viewInsets.bottom + fABHeight
+                  : MediaQuery.of(context).size.height -
+                      fAB.dy +
+                      MediaQuery.of(context).viewInsets.bottom,
+              color: Colors.white,
+            ),
+          ),
           Positioned(
             left: leftPadding,
             bottom: isKeyboardVisible(context)
@@ -705,6 +767,7 @@ class _FirstScreenState extends State<FirstScreen>
         Navigator.pushNamed(context, '/history_screen');
       }
     } else if (selectedActionIndex == 1) {
+      clearBackgroundImage();
       newNote();
       _setModeTyping(context);
     } else if (selectedActionIndex == 2) {
@@ -885,6 +948,13 @@ class _FirstScreenState extends State<FirstScreen>
   showBackgroundOverlay(BuildContext context) {}
 
   removeBackgroundOverlay() {}
+
+  void clearBackgroundImage() {
+    gCurrentNote.bgPath = '';
+    context.read<AppData>().wallpaperImageFile = null;
+    context.read<AppData>().wallpaperMode = WallpaperModes.color;
+    context.read<AppData>().pickWallpaperColor = Colors.white;
+  }
 }
 
 // class KeyboardHider extends StatelessWidget {

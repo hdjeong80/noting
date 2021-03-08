@@ -99,6 +99,14 @@ class WallpaperColorPickerDialog extends StatelessWidget {
             onChanged: (value) {
               context.read<AppData>().pickWallpaperColor = value;
               context.read<AppData>().wallpaperMode = WallpaperModes.color;
+              gCurrentNote.bgPath = '';
+              gCurrentNote.bgColor = value.value;
+              gNotingDatabase.editNote(
+                oldNote: gCurrentNote,
+                bgPath: '',
+                bgColor: gCurrentNote.bgColor,
+              );
+              print('bgColor:${gCurrentNote.bgColor}');
             },
             colorCodeBuilder: (context, color) => Container(),
           ),

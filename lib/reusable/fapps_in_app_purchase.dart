@@ -28,8 +28,11 @@ Future<void> fappsProcessInAppPurchase(BuildContext context) async {
   }
 
   // 2. get product info
-  const Set<String> _kIdsRemoveAds = {'removeAds'};
-  const Set<String> _kIdsDonate = {'donation'};
+  String _iOSRemoveAdsId = 'removeAds';
+  String _androidRemoveAdsId = 'remove_ads';
+  String _removeAdsId = Platform.isIOS ? _iOSRemoveAdsId : _androidRemoveAdsId;
+  Set<String> _kIdsRemoveAds = {_removeAdsId};
+  Set<String> _kIdsDonate = {'donation'};
 
   final ProductDetailsResponse response = await InAppPurchaseConnection.instance
       .queryProductDetails(_isDonateMode ? _kIdsDonate : _kIdsRemoveAds);

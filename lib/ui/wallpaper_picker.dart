@@ -50,7 +50,7 @@ class WallpaperPicker extends StatelessWidget {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: Colors.blue),
-                      color: Colors.transparent),
+                      color: Colors.white),
                   width: gDeviceWidth -
                       ConfigConst.scaffoldBodyPadding * 2 -
                       sizeReducer,
@@ -90,6 +90,12 @@ class WallpaperPicker extends StatelessWidget {
                               WallpaperModes.color;
                           context.read<AppData>().pickWallpaperColor =
                               Colors.white;
+                          gCurrentNote.bgPath = '';
+                          gCurrentNote.bgColor = Colors.white.value;
+                          gNotingDatabase.editNote(
+                              oldNote: gCurrentNote,
+                              bgPath: '',
+                              bgColor: gCurrentNote.bgColor);
                         },
                       ),
                       IconButton(
@@ -109,6 +115,12 @@ class WallpaperPicker extends StatelessWidget {
                               WallpaperModes.color;
                           context.read<AppData>().pickWallpaperColor =
                               Colors.black;
+                          gCurrentNote.bgPath = '';
+                          gCurrentNote.bgColor = Colors.black.value;
+                          gNotingDatabase.editNote(
+                              oldNote: gCurrentNote,
+                              bgPath: '',
+                              bgColor: gCurrentNote.bgColor);
                         },
                       ),
                       IconButton(
@@ -148,6 +160,13 @@ class WallpaperPicker extends StatelessWidget {
     if (pickedFile != null) {
       context.read<AppData>().wallpaperImageFile = File(pickedFile.path);
       context.read<AppData>().wallpaperMode = WallpaperModes.photo;
+      gCurrentNote.bgPath = pickedFile.path;
+      gCurrentNote.bgColor = Colors.white.value;
+      gNotingDatabase.editNote(
+          oldNote: gCurrentNote,
+          bgPath: pickedFile.path,
+          bgColor: gCurrentNote.bgColor);
+      print(pickedFile.path);
     } else {}
   }
 
@@ -157,6 +176,13 @@ class WallpaperPicker extends StatelessWidget {
     if (pickedFile != null) {
       context.read<AppData>().wallpaperImageFile = File(pickedFile.path);
       context.read<AppData>().wallpaperMode = WallpaperModes.photo;
+      gCurrentNote.bgPath = pickedFile.path;
+      gCurrentNote.bgColor = Colors.white.value;
+      gNotingDatabase.editNote(
+          oldNote: gCurrentNote,
+          bgPath: pickedFile.path,
+          bgColor: gCurrentNote.bgColor);
+      print(pickedFile.path);
     } else {}
   }
 }

@@ -478,6 +478,26 @@ Widget _listItem(BuildContext context, int index, Animation<double> animation) {
               gPainterController.eraseMode =
                   context.read<AppData>().isEraserMode;
 
+              if (gCurrentNote.bgPath != null) {
+                if (gCurrentNote.bgPath != '') {
+                  context.read<AppData>().wallpaperImageFile =
+                      File(gCurrentNote.bgPath);
+                  context.read<AppData>().wallpaperMode = WallpaperModes.photo;
+                } else {
+                  gCurrentNote.bgPath = '';
+                  context.read<AppData>().wallpaperImageFile = null;
+                  context.read<AppData>().wallpaperMode = WallpaperModes.color;
+                  context.read<AppData>().pickWallpaperColor =
+                      Color(gCurrentNote.bgColor ?? Colors.white.value);
+                }
+              } else {
+                gCurrentNote.bgPath = '';
+                context.read<AppData>().wallpaperImageFile = null;
+                context.read<AppData>().wallpaperMode = WallpaperModes.color;
+                context.read<AppData>().pickWallpaperColor =
+                    Color(gCurrentNote.bgColor ?? Colors.white.value);
+              }
+
               context.read<AppData>().isHistoryScreen = false;
               Navigator.pop(context);
             });
@@ -513,6 +533,28 @@ Widget _listItem(BuildContext context, int index, Animation<double> animation) {
                       gDrawRecorder.drawFromData();
                       gPainterController.eraseMode =
                           context.read<AppData>().isEraserMode;
+                      if (gCurrentNote.bgPath != null) {
+                        if (gCurrentNote.bgPath != '') {
+                          context.read<AppData>().wallpaperImageFile =
+                              File(gCurrentNote.bgPath);
+                          context.read<AppData>().wallpaperMode =
+                              WallpaperModes.photo;
+                        } else {
+                          gCurrentNote.bgPath = '';
+                          context.read<AppData>().wallpaperImageFile = null;
+                          context.read<AppData>().wallpaperMode =
+                              WallpaperModes.color;
+                          context.read<AppData>().pickWallpaperColor =
+                              Color(gCurrentNote.bgColor ?? Colors.white.value);
+                        }
+                      } else {
+                        gCurrentNote.bgPath = '';
+                        context.read<AppData>().wallpaperImageFile = null;
+                        context.read<AppData>().wallpaperMode =
+                            WallpaperModes.color;
+                        context.read<AppData>().pickWallpaperColor =
+                            Color(gCurrentNote.bgColor ?? Colors.white.value);
+                      }
 
                       context.read<AppData>().isHistoryScreen = false;
                       Future.delayed(Duration(milliseconds: 100)).then((value) {
